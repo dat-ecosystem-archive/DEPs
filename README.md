@@ -1,3 +1,3 @@
-# rfcs
+# Dat Enhancement Proposals
 
-RFCs for changes to the Dat protocol
+Dat Enhancement Proposals. Contains all specs for the Dat protocol, including drafts.
