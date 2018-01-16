@@ -1,5 +1,5 @@
 
-Title: **DEP 0000: My Proposal**
+Title: **DEP-0000: My Proposal**
 
 Short Name: `0000-my-proposal`
 
