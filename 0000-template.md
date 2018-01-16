@@ -3,11 +3,13 @@ Title: **DEP-0000: My Proposal**
 
 Short Name: `0000-my-proposal`
 
-Type: (Standard or Process)
+Type: (Standard, Process, or Informative)
 
 Status: Undefined (as of YYYY-MM-DD)
 
 Github PR: (add HTTPS link here after PR is opened)
+
+Authors: TBD
 
 # Summary
 [summary]: #summary
