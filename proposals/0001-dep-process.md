@@ -1,11 +1,11 @@
 
-Title: **DEP 0001: The Dat Enhancement Proposal Process**
+Title: **DEP-0001: The Dat Enhancement Proposal Process**
 
 Short Name: `0001-dep-process`
 
 Type: Process
 
-Status: Draft (as of 2018-01-10)
+Status: Draft (as of 2018-01-15)
 
 Github PR: (add HTTPS link here after PR is opened)
 
@@ -13,9 +13,9 @@ Github PR: (add HTTPS link here after PR is opened)
 # Summary
 [summary]: #summary
 
-The DEP ("Request for Comment") process is how the Dat open source community
-comes to (distributed) consensus around technical protocol enhancements and
-organizational process.
+The DEP ("Dat Enhancement Proposal") process is how the Dat open source
+community comes to (distributed) consensus around technical protocol
+enhancements and organizational process.
 
 # Motivation
 [motivation]: #motivation
@@ -40,21 +40,24 @@ the ecosystem as a whole.
 The process for proposing and debating a new DEP is:
 
 * Fork this git repository
-* Copy `template.md` to `proposals/0000-my-proposal.md` (don't chose the "next"
-  number, use zero; `my-proposal` should be a stub identifier for the proposal)
+* Copy `0000-template.md` to `proposals/0000-my-proposal.md` (don't chose the
+  "next" number, use zero; `my-proposal` should be a stub identifier for the
+  proposal)
 * Fill in the DEP template. The more details you can fill in at the begining,
   the more feedback reviewers can leave; on the other hand, the sooner you put
   your ideas down in writing, the faster others can point out issues or related
-  efforts.
+  efforts. Feel free to tweak or expand the structure (headers, content) of the
+  document to fit your needs.
 * Submit a github pull request for discussion. The proposal will likely be
-  ammended based on review and comments. The PR will be tagged to indicate
-  DEP type and status.
+  ammended based on review and comments. Go ahead and `cc:` specific community
+  members who you think would be good reviewers, though keep in mind
+  everybody's time and attention is finite..
 * Build consensus. This part of the process is not bounded in time, and will
   likely involve both discussion on the PR comment thread and elsewhere (IRC,
   etc).
 * Consider drafting or prototyping an implementation to demonstrate your
-  proposal and work out all the details. This step isn't necessary, however: a
-  proposer does not need to be a developer.
+  proposal and work out all the details. This step isn't strictly necessary,
+  however: a proposer does not need to be a developer.
 * If consensus seems to have emerged (for or against the proposal), a team
   member will assign an DEP number, update the status, and merge the PR.
 * Small tweaks (grammar, clarifications) to a merged DEP can take place as
@@ -120,7 +123,8 @@ accepting or rejecting a given DEP? Optimistically, it would be clear from
 reading a PR discussion thread whether "consensus" has been reached or not, but
 this might be ambiguous or intimidating to first-time contributors.
 
-When are or are not accepted DEPs binding? Presumably a technical DEP should indicate
+When are or are not accepted DEPs binding? Presumably a technical DEP should
+indicate whether it is optional or mandatory.
 
 Are "standard"/technical and "process" the right categories and terms to use?
 Some DEP systems (like the IETF one) also use terminology like "informational"
@@ -134,14 +138,11 @@ the DEP process (for example, the official Bittorrent protocol was documented
 in a "BEP"). Should dat do this? Or rely on the current (and possibly future)
 Dat whitepaper?
 
-Is "DEP" the term we want to use? Could also be "Dat Enhancement Proposal"
-(DEP), etc.
-
 # Changelog
 [changelog]: #changelog
 
 A brief statemnt about current status can go here, follow by a list of dates
 when the status line of this DEP changed (in most-recent-last order).
 
-- 2018-01-08: TODO: First complete draft submitted for review
+- 2018-01-15: TODO: First complete draft submitted for review
 
