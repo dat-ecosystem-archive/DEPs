@@ -9,10 +9,9 @@ Status: Draft (as of 2018-01-15)
 
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/2)
 
-Authors: Dat Protocol Working Group: Danielle, Mattias, Joe Hand, Karissa,
-Paul, Tara, Bryan
-
-[Bryan Newbold](https://github.com/bnewbold)
+Authors: Dat Protocol Working Group: [Tara](https://github.com/taravancil),
+[Paul](https://github.com/pfrazee), [Mathias](https://github.com/mafintosh), [Karissa](https://github.com/karissa), [Joe](https://github.com/karissa), [Danielle](#),
+[Bryan](https://github.com/bnewbold)
 
 # Summary
 [summary]: #summary
