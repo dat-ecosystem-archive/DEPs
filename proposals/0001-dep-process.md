@@ -293,18 +293,18 @@ designing the DEP process:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-What is the specific decision making process for accepting or rejecting a given
-DEP? Optimistically, it would be clear from reading a PR discussion thread
-whether "consensus" has been reached or not, but this might be ambiguous or
-intimidating to first-time contributors ("Tyrany of the Structureless").
+How is Working Group membership defined in the long run? This could be the
+topic of a follow-on Process DEP while this DEP is in Draft status..
 
 The intention is to retroactively document the entire Dat protocol in the form
-of DEPs, but a specific plan for this hasn't been worked out yet.
+of DEPs, but a specific plan for this hasn't been worked out yet. This is
+expected to be tackled by the Working Group while this DEP is in Draft status.
 
 How mutable should Draft Standards DEPs be over time? What about Process DEPs?
 Should there be an additional status ("Living"?) for DEPs that are expected to
 evolve, or is this against the whole philosophy of having specific stable
-documents to reference?
+documents to reference? This is expected to be decided while this DEP is in
+Draft status.
 
 # Changelog
 [changelog]: #changelog
