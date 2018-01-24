@@ -9,9 +9,13 @@ Status: Draft (as of 2018-01-15)
 
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/2)
 
-Authors: Dat Protocol Working Group: [Tara](https://github.com/taravancil),
-[Paul](https://github.com/pfrazee), [Mathias](https://github.com/mafintosh), [Karissa](https://github.com/karissa), [Joe](https://github.com/karissa), [Danielle](#),
+Authors: [Dat Protocol Working Group][wg]:
+[Tara](https://github.com/taravancil), [Paul](https://github.com/pfrazee),
+[Mathias](https://github.com/mafintosh), [Karissa](https://github.com/karissa),
+[Joe](https://github.com/karissa), [Danielle](#),
 [Bryan](https://github.com/bnewbold)
+
+[wg]: https://github.com/datprotocol/working-group
 
 # Summary
 [summary]: #summary
@@ -178,12 +182,12 @@ behavior going forward.
 # Decision Making Process
 [power]: #power
 
-There exists a Protocol Working Group (WG) which makes DEP status decisions.
-Membership is based on unanimous consensus invidation by the existing WG. WG
-members can resign at and time, or be ejected by unanimous (by organization)
-decision by the other WG members. Members are expected to commit to active
-participation for 6 month windows. The WG is expected to respect the needs and
-desires of the community as a whole.
+There exists a [Protocol Working Group (WG)][wg] which makes DEP status
+decisions.  Membership is based on unanimous consensus invidation by the
+existing WG. WG members can resign at and time, or be ejected by unanimous (by
+organization) decision by the other WG members. Members are expected to commit
+to active participation for 6 month windows. The WG is expected to respect the
+needs and desires of the community as a whole.
 
 For Draft status, at leat one WG member must review the entire proposal in
 detail, give feedback, and give informed approval. If no review takes place in
