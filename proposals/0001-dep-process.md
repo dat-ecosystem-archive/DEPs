@@ -5,7 +5,7 @@ Short Name: `0001-dep-process`
 
 Type: Process
 
-Status: Draft (as of 2018-01-15)
+Status: Draft (as of 2018-XX-YY)
 
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/2)
 
@@ -49,7 +49,7 @@ extensions. The technical quality of the protocol itself should be improved by
 increasing the number of people who can view and understand proposals at each
 step of the process. The barrier to entry for independent implementations
 should be lower, allowing new technical and user communities to adopt the
-protocol. The overall developent and decision making process should be more
+protocol. The overall development and decision making process should be more
 transparent, accessible, and scalable to a growing group of application
 developers and end users
 
@@ -90,21 +90,21 @@ new DEP is:
    is merged with "Draft" status, or declined.  This first stage of the review
    is expected to take **3 weeks at most** from when reviewers were assigned.
    It is appropriate to propose specific community members to review your
-   proposal. The submiter can withdraw a proposal at any time. If accepted, a
+   proposal. The submitter can withdraw a proposal at any time. If accepted, a
    DEP number will be assigned and the PR merged. If declined, reviewers may
    give feedback and/or invite proposers to "significantly revise and resubmit".
 1. While in draft status, proposals can be experimented with. Small corrections
    and clarifications can be submitted by PR expect to be merged quickly if
    they are reasonable and don't change the broad behavior or semantics of the
-   proposal; larger changes should be re-submitted as Superceding proposals.
-1. When it seems approrpriate, a PR can be submitted to upgrade the status of a
+   proposal; larger changes should be re-submitted as Superseding proposals.
+1. When it seems appropriate, a PR can be submitted to upgrade the status of a
    "Draft" to "Active". At this time a final review will take place, with the
    outcome being that a proposal stays "Draft" or becomes "Active".
    This review period is shorter (**2 weeks at most**), as everybody is
    expected to be more familiar with the proposal at this point.
    Small changes to the DEP can be included, but it's expected that
    this is in broad strokes the same proposal that was reviewed earlier (if
-   not, a new "Draft" should be proposed that Supercedes).
+   not, a new "Draft" should be proposed that Supersedes).
 1. Small tweaks (grammar, clarifications) to a merged DEP can take place as
    regular Github PRs; revisiting or significantly revising should take place
    as a new DEP. Draft, Process, and Informational DEPs have a lower bar for
@@ -119,7 +119,7 @@ new DEP is:
 DEPs should have a type:
 
 * **Standard** for technical changes to the protocol, on-disk formats, or
-  public APIs. These are intented to be *proscriptive*, and to clearly
+  public APIs. These are intended to be *proscriptive*, and to clearly
   delineate which features and behaviors are mandatory or optional.
 * **Process** for formalizing community processes or other (technical or
   non-technical) decisions. For example, a security vulnerability reporting
@@ -181,9 +181,9 @@ explicitly consider and note impacts on:
 
 The criteria for a proposal being accepted as a Draft are, at a minimum, that
 the proposal is complete, understandable, unambiguous, and relevant. There is a
-good faith assumption that the submiter believes that the proposal could
-actually be adopted and put to beneficial use. An editor screens proposals
-before fothe group for review.
+good faith assumption that the submitter believes that the proposal could
+actually be adopted and put to beneficial use. An editor may screen proposals
+before passing on to the group for review.
 
 For Standards and Process DEPs, Draft proposals should be specific enough that
 they can be prototyped and experimented with (eg, in a pilot program or test
@@ -193,7 +193,7 @@ code is helpful but not required.
 For a Draft to migrate to Active, there is an expectation that the proposal has
 been demonstrated (eg, in working code, though not necessarily in "official"
 libraries yet), that the proposal will be the "new normal" and expected
-behavior going forward, and that the chance of unforseen issues arising during
+behavior going forward, and that the chance of unforeseen issues arising during
 complete adoption is low.
 
 
@@ -234,7 +234,7 @@ repository, and are expected to be used only in exceptional cases (eg, are not
 invoked by default if a member blocks).
 
 Proposals are expected to be open for at least three days (72 hours) for
-comment (and longer to accomodate special circumstances, like holidays). Vetos
+comment (and longer to accommodate special circumstances, like holidays). Vetoes
 (blocks) can happen up to a week after initially being submitted for review,
 which might be retroactive if the proposal was accepted (by other WG members)
 very quickly.
@@ -258,7 +258,7 @@ in an ambiguous indefinite state anywhere along the process. "Draft" status is
 considered a stable state to linger in.
 
 Setting expectations for "completeness" of proposals, having an editor quickly
-skim proposals before jumping in to a full review, and acknowleding an explicit
+skim proposals before jumping in to a full review, and acknowledging an explicit
 "revise and re-submit" workflow are all attempts to head off the situation of
 partial proposals being submitted and then significantly revised, which places
 extra (time) burden on reviewers.
@@ -307,7 +307,7 @@ designing the DEP process:
 * **[XMPP Standards Process][xmpp]**: has the interesting sub-pattern of
   regularly updated (annual) standards. XMPP is also a protocol, like
   Bittorrent. The protocol was designed for easy extension, and at various
-  points has seen adoption, extention, and pressure from powerful entities.
+  points has seen adoption, extension, and pressure from powerful entities.
 * **Python Enhancement Process** documented in [PEP 1][pep-1]. PEPs are
   relatively broad in scope (they often speak to process and organizational
   dynamics), and are widely cited directly by name. Proposals are usually
@@ -344,5 +344,6 @@ clarified when concrete examples arise.
 # Changelog
 [changelog]: #changelog
 
-- 2018-01-24: DEP process and governance model is discussed by Working Group
+- 2018-01-24: DEP process and governance model is discussed by Working Group.
+  First full draft of DEP-0001 submitted for review.
 
