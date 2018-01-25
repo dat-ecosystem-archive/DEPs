@@ -53,13 +53,14 @@ protocol. The overall developent and decision making process should be more
 transparent, accessible, and scalable to a growing group of application
 developers and end users
 
-# Submitting a Proposal
+
+# How To Submit a Proposal
 [submit]: #submit
 
 As a first step, before drafting a DEP or implementing experimental new
 protocol features, it's helpful to informally pitch your idea to see if others
 in the community are already thinking something similar, or have discussed the
-same idea in the past. This discussion could happen over chat, github issues,
+same idea in the past. This discussion could happen over chat, Github issues,
 blog posts, or other channels. If you can recruit collaborators and work out
 some of the details, all the better. This period could be called **pre-DEP**.
 
@@ -109,20 +110,11 @@ new DEP is:
    as a new DEP. Draft, Process, and Informational DEPs have a lower bar for
    evolution over time via direct PR.
 
-For appropriate DEPs (including *all* Standards DEPs), authors should
-explicitly consider and note impacts on:
-
-* Privacy and User Rights: consider reading IETF [RFC 6973] ("Privacy
-  Considerations for Internet Protocols") and [RFC 8280] ("Research into Human
-  Rights Protocol Considerations")
-* Backwards compatibility of on-disk archives and older network clients
-
-[RFC-6973]: https://tools.ietf.org/html/rfc6973
-[RFC-8280]: https://tools.ietf.org/html/rfc8280
-
-
 # Details
 [reference-documentation]: #reference-documentation
+
+## Types and Statuses
+[types]: #types
 
 DEPs should have a type:
 
@@ -153,6 +145,9 @@ The status of a DEP can be:
 * **Superseded**: a formerly "active" DEP has been made obsolete by a new
   active DEP; the new DEP should specify specific old DEPs that it would
   supersede.
+
+## Content and Structure
+[content]: #content
 
 A changelog should be kept in the DEP itself giving the date of any changes of
 status.
@@ -259,6 +254,7 @@ another" place to look.
 [datproto-group]: https://github.com/datprotocol
 [discussion-repo]: https://github.com/datproject/discussions/issues
 
+
 # Background and References
 [references]: #references
 
@@ -297,6 +293,7 @@ designing the DEP process:
 [xmpp]: https://xmpp.org/about/standards-process.html
 [ietf]: https://www.ietf.org/about/process-docs.html
 [pep-1]: https://www.python.org/dev/peps/pep-0001/
+
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
