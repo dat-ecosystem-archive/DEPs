@@ -76,37 +76,37 @@ new DEP is:
    below for details). Feel free to tweak or expand the structure (headers,
    content) of the document to fit your needs, but your proposal should be
    "complete" before submission.
-1. You can submit an informal WIP (work in progress) PR whenever you like for
-   early feedback and discussion, but there is no expectation that your
-   proposal will be given detailed review until it is complete.
+1. You can create an informal WIP (work in progress) PR (pull-request)
+   whenever you like for early feedback and discussion, but there is no
+   expectation that your proposal will be given detailed review until it is
+   complete.
 1. When you are ready, submit your complete proposal for review (this could be
-   opening a PR or removing WIP status from an existing one). An editor will
-   look over your proposal for completeness; if acceptable, they will assign
-   one or more reviewers. At this stage, there are two primary outcomes: your
-   proposal is merged with "Draft", or declined. Submited proposals are
-   expected to be complete, understandable, and relevent; see below for more
-   details. This early stage of the review is expected to take **3 weeks at
-   most** from when reviewers were assigned. It is appropriate to propose
-   specific community members to review your proposal. The submiter can
-   withdraw a proposal at any time. If accepted, a DEP number will be assigned
-   and the PR merged. If there is unambiguous consensus (or, eg, a DEP is
-   documenting already adopted practice), a DEP can move directly to Active at
-   this stage.
+   opening a PR or removing WIP status from an existing one), with the intent
+   of being accepted with "Draft" status.
+   An editor (somebody who is an owner of the DEPs repository) will look over
+   your proposal for completeness; if acceptable, they will assign one or more
+   reviewers.
+   At this stage, two outcomes are the most likely: your proposal
+   is merged with "Draft" status, or declined.  This first stage of the review
+   is expected to take **3 weeks at most** from when reviewers were assigned.
+   It is appropriate to propose specific community members to review your
+   proposal. The submiter can withdraw a proposal at any time. If accepted, a
+   DEP number will be assigned and the PR merged. If declined, reviewers may
+   give feedback and/or invite proposers to "significantly revise and resubmit".
 1. While in draft status, proposals can be experimented with. Small corrections
    and clarifications can be submitted by PR expect to be merged quickly if
    they are reasonable and don't change the broad behavior or semantics of the
    proposal; larger changes should be re-submitted as Superceding proposals.
 1. When it seems approrpriate, a PR can be submitted to upgrade the status of a
-   Draft to Active. At this time a final review will take place, with the
-   outcome being that a prosal stays a Draft or is Active. It's also possible
-   for a Draft to be Closed (usuall by a specific PR to propose this). This
-   review period is shorter (**2 weeks maximum**), as the relevant reviewers
-   are expected to be familiar with the proposal at this point. Reasonably
-   sized changes to the DEP can be included, but it's expected that this is
-   in broad strokes the same proposal that was reviewed earlier (if not, a new
-   Draft should be proposed that Supercedes).
+   "Draft" to "Active". At this time a final review will take place, with the
+   outcome being that a proposal stays "Draft" or becomes "Active".
+   This review period is shorter (**2 weeks at most**), as everybody is
+   expected to be more familiar with the proposal at this point.
+   Small changes to the DEP can be included, but it's expected that
+   this is in broad strokes the same proposal that was reviewed earlier (if
+   not, a new "Draft" should be proposed that Supercedes).
 1. Small tweaks (grammar, clarifications) to a merged DEP can take place as
-   regular github PRs; revisiting or significantly revising should take place
+   regular Github PRs; revisiting or significantly revising should take place
    as a new DEP. Draft, Process, and Informational DEPs have a lower bar for
    evolution over time via direct PR.
 
@@ -131,19 +131,21 @@ DEPs should have a type:
 The status of a DEP can be:
 
 * **Pre-Merge**: a well-formed DEP has been written and a PR opened. The
-  "Status" line can list "Draft" when in this state.
+  "Status" line can list Draft when in this state.
 * **Draft**: PR has been merged and a number assigned, but additional time is
-  needed for deeper discussion or more implementation before being fully
-  adopted.
+  needed for deeper discussion or more implementation before being "normative"
+  and expected for implementation. It is acceptable to have "competing"
+  proposals in this state at the same time.
 * **Active**: adopted or intended for implementation in mainline libraries and
-  clients as appropriate
+  clients as appropriate. Again, DEPs should clarify which aspects of
+  themselves are optional or required for well-behaved clients.
 * **Closed**: either consensus was against, a decision was postponed, or the
   authors withdrew their proposal. This could apply to any of: a proposal PR
   that was never merged, a merged Draft (which was never Active), or an Active
   DEP which there is now consensus against without a specific new DEP to
   replace it.
-* **Superseded**: a formerly "active" DEP has been made obsolete by a new
-  active DEP; the new DEP should specify specific old DEPs that it would
+* **Superseded**: a formerly Active DEP has been made obsolete by a new
+  Active DEP; the new DEP should specify specific old DEPs that it would
   supersede.
 
 ## Content and Structure
@@ -159,84 +161,108 @@ The DEP text itself should be permissively licensed; the convention is to use
 the Creative Commons Attribution License (CC-BY), with attribution to the major
 contributing authors listed.
 
+For appropriate DEPs (including *all* Standards DEPs), authors should
+explicitly consider and note impacts on:
 
-# Adoption Criteria
+* Privacy and User Rights. Consider reading IETF [RFC 6973] ("Privacy
+  Considerations for Internet Protocols") and [RFC 8280] ("Research into Human
+  Rights Protocol Considerations")
+* Backwards compatibility of on-disk archives and older network clients. If a
+  backwards-incompatible change is proposed, a migration plan should be
+  sketched out in the proposal
+* Security
+
+[RFC-6973]: https://tools.ietf.org/html/rfc6973
+[RFC-8280]: https://tools.ietf.org/html/rfc8280
+
+
+## Acceptance Criteria
 [criteria]: #criteria
 
 The criteria for a proposal being accepted as a Draft are, at a minimum, that
 the proposal is complete, understandable, unambiguous, and relevant. There is a
 good faith assumption that the submiter believes that the proposal could
-actually be adopted and put to beneficial use. An editor (any member of the
-Protocol Working Group) screens proposals before to the group for review.
+actually be adopted and put to beneficial use. An editor screens proposals
+before fothe group for review.
 
 For Standards and Process DEPs, Draft proposals should be specific enough that
-it could be prototyped and experimented with (eg, a pilot program or test
-network), but not that all details have been worked out.
+they can be prototyped and experimented with (eg, in a pilot program or test
+network), but it isn't expected that all details have been worked out. Working
+code is helpful but not required.
 
 For a Draft to migrate to Active, there is an expectation that the proposal has
-been demonstrated, that the change of significant unforseen issues in complete
-adoption is low, and that the proposal will be the "new normal" and expected
-behavior going forward.
+been demonstrated (eg, in working code, though not necessarily in "official"
+libraries yet), that the proposal will be the "new normal" and expected
+behavior going forward, and that the chance of unforseen issues arising during
+complete adoption is low.
 
 
-# Decision Making Process
+## Decision Making Process
 [power]: #power
 
-There exists a [Protocol Working Group (WG)][wg] which makes DEP status
-decisions.  Membership is based on unanimous consensus invidation by the
-existing WG. WG members can resign at and time, or be ejected by unanimous (by
-organization) decision by the other WG members. Members are expected to commit
-to active participation for 6 month windows. The WG is expected to respect the
-needs and desires of the community as a whole.
+There exists a [Protocol Working Group (WG)][wg] (WG) which makes DEP status
+decisions; see the Github repository for a list of current members and the
+governance process.
 
-For Draft status, at leat one WG member must review the entire proposal in
-detail, give feedback, and give informed approval. If no review takes place in
-the fixed time window, the default is to close (reject) until a member is
-willing to commit to review. Any WG member can request revisions or
-clarifications (blocking acceptance until addressed) or veto acceptance if they
-agree. A veto can be overridden by unanimous decision of all other WG members
-on an organizational affiliation basis (aka: a single organization can not
-unanimously veto a proposal).
+By no means should working group members be the only people reviewing or giving
+feedback on proposals.
 
-For Active status, the default is again negative (the proposal remains a
-draft). 
+When deciding on Draft status, at least one WG member must review the entire
+proposal in detail, give feedback, and give informed approval. If no detailed
+review takes place in the fixed time window, the default is to close (reject)
+until a member is willing to commit to review. Any WG member can request
+revisions or clarifications (blocking acceptance until addressed), and any
+member can block. In other words, consensus requires that at least one member
+actively approve, and any member can block, but it isn't required to have every
+member review and actively given an opinion. This is referred to as the "loose
+consensus" model.
+
+For Active status, the expectation is that all working group members will
+review the proposal and actively participate in consensus. In the event that
+not all members can participate, the default is again negative. Any member can
+block. This is referred to as the "complete consensus" model.
+
+For all other status changes, at least one WG member must vouch for or approve
+the change ("loose consensus"). If there is unambiguous consensus (or, eg, a
+DEP is documenting already adopted practice), a DEP can move directly to Active
+status (following the "complete consensus" process).
+
+In all cases, if there is a deadlock (a block can not be overcome after
+further discussion), there is an option to override the block by a vote. The
+details of this process are left to description in the Working Group
+repository, and are expected to be used only in exceptional cases (eg, are not
+invoked by default if a member blocks).
 
 Proposals are expected to be open for at least three days (72 hours) for
 comment (and longer to accomodate special circumstances, like holidays). Vetos
-can happen up to a week after initially being submitted for review, which might
-be retroactive if the proposal was accepted early.
-
-For all other status changes, at least one WG member must vouch for or approve
-the change. For example, if a Draft was submitted to be Closed, but the WG
-decides to switch to Accept instead (!), only one WG member needs to propose
-the change. If the WG is deadlocked (eg, conflicting proposals), the default
-action is taken (which is no action).
+(blocks) can happen up to a week after initially being submitted for review,
+which might be retroactive if the proposal was accepted (by other WG members)
+very quickly.
 
 
 # Rationale
 [rationale]: #rationale
 
-This proposal attempts to head off a couple negative patterns.
+In the design space of RFC processes, there are two decision points determining
+the formality and maturity of accepted standards. The first is, does draft
+status mean *could* be implemented, or *has* been implemented? We chose
+"could". Secondly, for active (or "final") status, is the proposal *expected*
+to be dominant in the wild, or *is it already* dominant in the wild? We chose
+"expected". In both cases we are emphasizing clarification and stabilization of
+new ideas, as opposed to enforcing interoperability of competing formulations
+of the same idea. In short, we expect DEPs to lead (rather than tail)
+implementation.
 
-Proposals could get stuck in an ambiguous indefinite state anywhere along the
-procoess, leaving ambiguity about their state. This is mitigated by setting
-time limits and default outcomes.
+Time limits and default outcomes are used to prevent proposals could get stuck
+in an ambiguous indefinite state anywhere along the process. "Draft" status is
+considered a stable state to linger in.
 
-A related possible problem is when something is submitted for formal review,
-but changes rapidly based on feedback, distracting reviewers and making it hard
-to give clear feedback. Or, an incomplete proposal is submitted, reviewers ask
-for more details, then need to re-review when the details arrive. This is
-mitigated by setting expectations for the completeness of proposals before
-submission, and giving an explicit "withdrawl and resubmit" workflow for larger
-changes.
+Setting expectations for "completeness" of proposals, having an editor quickly
+skim proposals before jumping in to a full review, and acknowleding an explicit
+"revise and re-submit" workflow are all attempts to head off the situation of
+partial proposals being submitted and then significantly revised, which places
+extra (time) burden on reviewers.
 
-When defining the proposal statuses, there are two manin questions for
-technical standards: does draft status mean *could* be implemented, or *has*
-been implemented? We chose "could". For active (or "final") status, is the
-proposal *expected* to be dominant in the wild, or *is it already* dominant in
-the wild? We chose "expected". In both cases we are emphasizing clarification
-and stabilization of new ideas, as opposed to enforcing interoperability of
-competing formulations of the same idea.
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -262,13 +288,18 @@ The following standards processes were referenced and considered while
 designing the DEP process:
 
 * **BitTorrent Enhancement Process** as described in [BEP 1][bep-1]. The
-  Bittorrent protocol has a lot of similarities to Dat, and as a "protocol" is
-  most similar in scope.
+  Bittorrent protocol has a lot of technical similarities to Dat, and as a
+  single protocol family (not a language or full-stack system) is one of the
+  most similar in scope. The de facto BEP model is that Drafts are very stable
+  and widely adopted; only the most universal core components are Final. The
+  DEP process bases it's type categories on the BEP process. There is a single
+  editor and an explicit BDFL in the BEP process.
 * The **[Rust Language RFC Process][rust-rfc]** is relatively new, but has had
   a huge volume of proposals, rivaling even the IETF. The process is relatively
   lightweight and happens entirely on Github; it is the most similar to the DEP
-  process proposed here. Rust has strong organizational backing with defined
-  leadership roles; proposals are reviewed by specific sub-teams.
+  process proposed here, in terms of Draft/Active distinction. Rust has strong
+  organizational backing with defined leadership roles; proposals are reviewed
+  by specific sub-teams.
 * **[IETF RFC Process][ietf]**: perhaps the oldest and best known RFC process,
   under the motto of "rough consensus and working code". The process is very
   bespoke (involving custom file formats and software) and heavy on process
@@ -285,7 +316,8 @@ designing the DEP process:
   he sometimes delegates to deputies.
 * The **W3C** is a paid membership organization which, like the IETF, is made
   up of entities large and small, for-profit and altruistic, with decent
-  regional diversity.
+  regional diversity. W3C standards are often rather large and verbose
+  documents, and tend to tail (rather than lead) implementation.
 
 
 [bep-1]: http://bittorrent.org/beps/bep_0001.html
@@ -298,21 +330,19 @@ designing the DEP process:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-How is Working Group membership defined in the long run? This could be the
-topic of a follow-on Process DEP while this DEP is in Draft status..
+How mutable should "Draft" Standards DEPs be over time? What about
+Informational DEPs? Should there be an additional status ("Living"?) for DEPs
+that are expected to evolve, or is this against the whole philosophy of having
+specific stable documents to reference? This is expected to be clarified while
+this DEP itself is in Draft status.
 
-The intention is to retroactively document the entire Dat protocol in the form
-of DEPs, but a specific plan for this hasn't been worked out yet. This is
-expected to be tackled by the Working Group while this DEP is in Draft status.
-
-How mutable should Draft Standards DEPs be over time? What about Process DEPs?
-Should there be an additional status ("Living"?) for DEPs that are expected to
-evolve, or is this against the whole philosophy of having specific stable
-documents to reference? This is expected to be decided while this DEP is in
-Draft status.
+Does "Active" status mean that implementation is *mandatory*, and that features
+*must* be implemented unless they are explicitly optional? How would this
+expectation be enforced for third-party software? This is expected to be
+clarified when concrete examples arise.
 
 # Changelog
 [changelog]: #changelog
 
-- 2018-01-15: TODO: First complete draft submitted for review
+- 2018-01-24: DEP process and governance model is discussed by Working Group
 
