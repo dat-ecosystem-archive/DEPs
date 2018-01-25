@@ -10,12 +10,16 @@ Status: Draft (as of 2018-01-15)
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/2)
 
 Authors: [Dat Protocol Working Group][wg]:
-[Tara](https://github.com/taravancil), [Paul](https://github.com/pfrazee),
-[Mathias](https://github.com/mafintosh), [Karissa](https://github.com/karissa),
-[Joe](https://github.com/karissa), [Danielle](#),
-[Bryan](https://github.com/bnewbold)
+[Tara Vancil](https://github.com/taravancil),
+[Paul Frazee](https://github.com/pfrazee),
+[Mathias Buus](https://github.com/mafintosh),
+[Karissa McKelvey](https://github.com/karissa),
+[Joe Hand](https://github.com/karissa),
+[Danielle Robinson](#),
+[Bryan Newbold](https://github.com/bnewbold)
 
 [wg]: https://github.com/datprotocol/working-group
+
 
 # Summary
 [summary]: #summary
@@ -23,6 +27,7 @@ Authors: [Dat Protocol Working Group][wg]:
 The Dat Enhancement Proposal ("DEP") process is how the Dat open source
 community comes to (distributed) consensus around technical protocol
 enhancements and organizational process.
+
 
 # Motivation
 [motivation]: #motivation
