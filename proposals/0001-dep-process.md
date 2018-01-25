@@ -43,6 +43,11 @@ which requires better coordination (process) and communication of technical
 details (standards). There is also an increasing need to be legible to and
 accessible to parties outside the existing Dat ecosystem.
 
+With growing use, the logistics of rolling out protocol changes and
+backwards-incompatible changes becomes more difficult, but at the same time
+more important to coordinate smoothly. Planning requires clear communication of
+change ahead of time.
+
 A public DEP process is expected to improve coordination and planning by
 setting clear expectations for documentation of protocol changes and
 extensions. The technical quality of the protocol itself should be improved by
