@@ -14,8 +14,8 @@ Authors: [Dat Protocol Working Group][wg]:
 [Paul Frazee](https://github.com/pfrazee),
 [Mathias Buus](https://github.com/mafintosh),
 [Karissa McKelvey](https://github.com/karissa),
-[Joe Hand](https://github.com/karissa),
-[Danielle Robinson](#),
+[Joe Hand](https://github.com/joehand),
+[Danielle Robinson](https://github.com/daniellecrobinson),
 [Bryan Newbold](https://github.com/bnewbold)
 
 [wg]: https://github.com/datprotocol/working-group
