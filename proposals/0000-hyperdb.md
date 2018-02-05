@@ -5,7 +5,7 @@ Short Name: `0000-hyperdb`
 
 Type: Standard
 
-Status: Undefined (as of 2018-01-XXX)
+Status: Undefined (as of 2018-02-XX)
 
 Github PR: (add HTTPS link here after PR is opened)
 
@@ -17,14 +17,14 @@ Authors: noffle (Stephen Whitmore), bnewbold (Bryan Newbold)
 
 HyperDB is a new abstraction layer providing a general purpose distributed
 key/value store over the Dat protocol. It is an iteration on the hyperdrive
-directory tree implementation, providing a general purpose key/value store on
-top of the hypercore append-only log abstraction layer. Keys are path-like
-strings (eg, `/food/fruit/kiwi`), and values are arbitrary binary blobs (with
-expected size of under a megabyte).
+directory tree implementation, building top of the hypercore append-only log
+abstraction layer. Keys are path-like strings (eg, `/food/fruit/kiwi`), and
+values are arbitrary binary blobs (generally under a megabyte).
 
-hyperdrive is expected to be re-implemented on top of HyperDB for improved
-performance with many (millions) of files. The hyperdrive API should be largely
-unchanged, but the `metadata` format will be backwards-incompatible.
+Hyperdrive (used by the Dat application) is expected to be re-implemented on
+top of HyperDB for improved performance with many files (eg, millions). The
+hyperdrive API should be largely unchanged, but the `metadata` format will be
+backwards-incompatible.
 
 
 # Motivation
@@ -37,11 +37,16 @@ basic local actions such as adding a directory taking an unacceptably long time
 to complete.
 
 A secondary benefit is to refactor the trie-structured key/value API out of
-hyperdrive, allowing third party code to build on this abstraction layer.
+hyperdrive, allowing third party code to build applications directly on this
+abstraction layer.
 
 
 # Usage Documentation
 [usage-documentation]: #usage-documentation
+
+*This section describes HyperDB's interface and behavior in the abstract for
+application programmers. It is not intended to be exact documentation of any
+particular implementation (including the reference Javascript module).*
 
 HyperDB is structured to be used much like a traditional hierarchical
 filesystem. A value can be written and read at locations like `/foo/bar/baz`,
@@ -49,32 +54,81 @@ and the API supports querying or tracking values at subpaths, like how watching
 for changes on `/foo/bar` will report both changes to `/foo/bar/baz` and also
 `/foo/bar/19`.
 
-## New API
+Lower-level details of the hypercore append-only log, disk serialization, and
+networked synchronization features that HyperDB builds on top of are not
+described in detail here. Multi-writer hypercore details are also not discussed
+in this DEP. References to formal documentation of these details are TODO.
 
-`add(key, value)`
+A HyperDB database instance can be represented by a single hypercore feed (or
+several feeds in a multi-writer context), and is named, referenced, and
+discovered using the public and discovery keys of the hypercore feed (or the
+original feed if there are several). In a single-writer configuration, only a
+single node (holding the secret key) can mutate the database (eg, via `put` or
+`delete` actions).
 
-`get(key)`
+**Keys** can be any UTF-8 string. Path segments are separated by the forward
+slash character (`/`).
 
-`delete(key)`
+**Values** can be any binary blob, including empty (of zero length). For
+example, values could be UTF-8 encoded strings, JSON encoded objects, protobuf
+messages, or a raw `uint64` integer (of either endian-ness). Length is the only
+form of type or metadata stored about the value; deserialization and validation
+are left to library and application developers.
+
+TODO: key corner-cases:
+- `///` same as `//`? `///a` vs. `//a`?
+
+TODO: size limits on keys and values?
+
+TODO: "prefix" end in a trailing slash, or optional?
+
+A leading `/` is optional: `db.get('/hello')` and `db.get('hello')` are
+equivalent.
+
+## Core API Semantics
+
+`db.put(key, value)`: inserts `value` (arbitrary bytes) under the path `key`.
+Returns an error (eg, via callback) if there was a problem.
+
+`db.get(key)`: Reading a non-existant `key` is an error.
+
+`db.delete(key)`: Removes the key from the database. Deleting a non-existant
+key is an error.
+
+`db.list(prefix)`: returns a flat (not nested) list of all keys currently in
+the database.
+
+TODO: in what order?
+
+TODO: what if node is a file, not a prefix?
+
+An example pseudo-code session working with a database might be:
+
+TODO:
+
+TODO: Read Stream
+
+TODO: Changes Stream
+
+TODO: Diff Stream
+
 
 # Reference Documentation
 [reference-documentation]: #reference-documentation
 
-## Set of append-only logs (feeds)
+The new Node protobuf message schema is:
 
-A HyperDB is fundamentally a set of
-[hypercore](https://github.com/mafintosh/hypercore)s. A *hypercore* is a secure
-append-only log that is identified by a public key, and can only be written to
-by the holder of the corresponding private key.
+```
+  message Node {
+    optional string key = 1;
+    optional bytes value = 2;
+    repeated uint64 clock = 3;
+    optional bytes trie = 4;
+    optional uint64 feedSeq = 6; // TODO remove and merge into index (trie+feedSeq)
+  }
+```
 
-Each entry in a hypercore has a *sequence number*, that increments by 1 with
-each write, starting at 0 (`seq=0`).
-
-HyperDB builds its hierarchical key-value store on top of these hypercore
-feeds, and also provides facilities for authorization, and replication of those
-member hypercores.
-
-## Incremental index
+## Incremental Index
 
 HyperDB builds an *incremental index* with every new key/value pairs ("nodes")
 written. This means a separate data structure doesn't need to be maintained
@@ -209,19 +263,22 @@ TODO:
 - What parts of the design do you expect to resolve through implementation and code review, or are left to independent library or application developers?
 - What related issues do you consider out of scope for this DEP that could be addressed in the future independently of the solution that comes out of this DEP?
 
-# Migration logistics
+# Dat Migration logistics
 [migration]: #migration
 
-HyperDB is not backwards compatible with the existing hyperdrive
-implementation, meaning dat clients will need to support multiple on-disk
-representations during a transition period.
+HyperDB is not backwards compatible with the existing hyperdrive metadata,
+meaning dat clients may need to support both versions during a transition
+period. This applies both to archives saved to disk (eg, in SLEEP) and to
+archives received and published to peers over the network.
 
-a new abstraction layer between hypercore (replicated append-only
-logs) and hyperdrive (versioned file system abstraction).  HyperDB provides an
-efficient key/value database API, with path-like strings as keys and arbitrary
-binary data (up to a reasonable chunk size) as values. HyperDB will require
-breaking changes to dat clients, but will not require changes to the network
-wire protocol.
+No changes to the Dat network wire protocol itself are necessary, only changes
+to content passed over the protocol. The Dat `content` feed, containing raw
+file data, is not impacted by HyperDB, only the contents of the `metadata`
+feed.
+
+Upgrading a Dat (hyperdrive) archive to HyperDB will necessitate creating a new
+feed from scratch, meaning new public/private key pairs, and that public key
+URL links will need to change.
 
 # Changelog
 [changelog]: #changelog
@@ -232,6 +289,6 @@ for this DEP.
 
 - 2017-12-06: @noffle publishes `ARCHITECTURE.md` overview in the
   [hyperdb github repo][arch_md]
-- 2018-01-XXX: First complete draft submitted for review
+- 2018-02-XX: First complete draft submitted for review
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
