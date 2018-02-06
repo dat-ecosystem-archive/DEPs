@@ -131,6 +131,53 @@ recombined before sending, so only 50 bytes would go down the connection; the
 same process would be followed by the receiver.
 
 
+## Block Tree Digest
+[block-tree-digest]: #block-tree-digest
+
+When asking for a block of data we want to reduce the amount of duplicate hashes that are sent back. To communicate which hashes we have, we just have to communicate two things: which uncles we have and whether or not we have any parent node that can verify the tree.
+
+Consider the following tree:
+
+```
+0
+  1
+2
+    3
+4
+  5
+6
+```
+
+If we want to fetch block 0, we need to communicate whether of not we already have the uncles (2, 5) and the parent (3). This information can be compressed into very small bit vector using the following scheme:
+
+ - Let the trailing bit denote whether or not the leading bit is a parent and not a uncle.
+ - Let the previous trailing bits denote whether or not we have the next uncle.
+
+Let's consider an example. Suppose we want to fetch block 0, and we have 2 and 3 but not 5. We need to therefore communicate:
+
+```
+the leading bit is a parent, not an uncle
+we already have the first uncle, 2 so don't send us that
+we don't have the next uncle, 5
+we have the next parent, 3
+```
+
+We would encode this into the bit vector `1011`. Decoded:
+
+```
+101(1) <-- the leading bit is a parent, not an uncle
+10(1)1 <-- we already have the first uncle, 2 so don't send us that
+1(0)11 <-- we don't have the next uncle, 5
+(1)000 <-- we have the next parent, 3
+```
+      
+So using this digest the recipient can easily figure out that they only need to send us one hash, 5, for us to verify block 0.
+
+The bit vector 1 (only contains a single one) means that we already have all the hashes we need so just send us the block.
+
+These digests are very compact in size, only `(log2(number-of-blocks) + 2) / 8` bytes needed in the worst case. For example if you are sharing one trillion blocks of data the digest would be `(log2(1000000000000) + 2) / 8 ~= 6` bytes long.
+
+
 # Message Details
 [message-details]: #message-details
 
