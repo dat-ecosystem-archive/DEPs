@@ -23,9 +23,9 @@ Dat uses two registers, `content` and `metadata`. The `content` register contain
 # Motivation
 [motivation]: #motivation
 
-Many datasets are shared online today using HTTP and FTP, which lack built in support for version control or content addressing of data. This results in link rot and content drift as files are moved, updated or deleted. Dat solves this with a distributed, versioned file-sharing network which enables multiple devices to act in concert as a single virtual host.
+Many datasets are shared online today using HTTP, which lacks built in support for version control or content addressing of data. This results in link rot and content drift as files are moved, updated or deleted. Dat solves this with a distributed, versioned file-sharing network that enables multiple untrusted devices to act as a single virtual host.
 
-To ensure files are hosted correctly by untrusted devices, Dat needs a data structure which verifies the integrity of content and which retains a history of revisions. Notably, the data structure must:
+To ensure files are hosted correctly and can be referenced at different points in time, Dat needs a data structure which verifies the integrity of content and which retains a history of revisions. Notably, the data structure must:
 
  - Provide verification of file integrity using only the dataset identifier
  - Retain a full history of revisions to the dataset
@@ -33,11 +33,22 @@ To ensure files are hosted correctly by untrusted devices, Dat needs a data stru
  - Support efficient random and partial replication over the network
 
 
+# Append-only Lists
+[append-only-lists]: #append-only-lists
 
-## Merkle Trees
-[merkle-trees]: #merkle-trees
+The Hypercore register is an append-only list. The content of each list entry is an arbitrary blob of data. It can be replicated partially or fully over the network, and data can be received from multiple peers at once.
 
-Registers in Dat use a specific method of encoding a Merkle tree where hashes are positioned by a scheme called binary in-order interval numbering or just "bin" numbering. This is just a specific, deterministic way of laying out the nodes in a tree. For example a tree with 7 nodes will always be arranged like this:
+Internally, the Hypercore register is represented by a signed merkle tree. The tree is identified on the network with a public key, which is then used to verify the signatures on received data. The tree is represented as a "Flat In-Order Tree."
+
+
+## Flat In-Order Trees
+[flat-in-order-trees]: #flat-in-order-trees
+
+A Flat In-Order Tree is a simple way represent a binary tree as a list. It also allows you to identify every node of a binary tree with a numeric index. Both of these properties makes it useful in distributed applications to simplify wire protocols that uses tree structures.
+
+Flat trees are described in [PPSP RFC 7574](https://datatracker.ietf.org/doc/rfc7574/?include_text=1) as "Bin numbers."
+
+A sample flat tree spanning 4 blocks of data looks like this:
 
 ```
 0
@@ -48,8 +59,49 @@ Registers in Dat use a specific method of encoding a Merkle tree where hashes ar
   5
 6
 ```
+      
+The even numbered entries represent data blocks (leaf nodes) and odd numbered entries represent parent nodes that have two children.
 
-In Dat, the hashes of the chunks of files are always even numbers, at the wide end of the tree. So the above tree had four original values that become the even numbers:
+The depth of an tree node can be calculated by counting the number of trailing 1s a node has in binary notation.
+
+```
+5 in binary = 101 (one trailing 1)
+3 in binary = 011 (two trailing 1s)
+4 in binary = 100 (zero trailing 1s)
+```
+      
+1 is the parent of (0, 2), 5 is the parent of (4, 6), and 3 is the parent of (1, 5).
+
+If the number of leaf nodes is a power of 2 the flat tree will only have a single root. Otherwise it'll have more than one. As an example here is a tree with 6 leafs:
+
+```
+0
+  1
+2
+    3
+4
+  5
+6
+
+8
+  9
+10
+```
+      
+The roots spanning all the above leafs are 3 an 9. Throughout this document we'll use following tree terminology:
+
+ - `parent` - a node that has two children (odd numbered)
+ - `leaf` - a node with no children (even numbered)
+ - `sibling` - the other node with whom a node has a mutual parent
+ - `uncle` - a parent's sibling
+
+
+## Merkle Trees
+[merkle-trees]: #merkle-trees
+
+A merkle tree is a binary tree where every leaf is a hash of a data block and every parent is the hash of both of its children. Hypercore registers are merkle trees encoded with "bin numbers" (see above).
+
+Let's look at an example. A register containing four values would be mapped to the even numbers 0, 2, 4, and 6.
 
 ```
 chunk0 -> 0
@@ -58,109 +110,131 @@ chunk2 -> 4
 chunk3 -> 6
 ```
 
+Let `h(x)` be a hash function. Using flat-tree notation, the merkle tree spanning these data blocks looks like this:
+
+```
+0 = h(chunk0)
+1 = h(0 + 2)
+2 = h(chunk1)
+3 = h(1 + 5)
+4 = h(chunk2)
+5 = h(4 + 6)
+6 = h(chunk3)
+```
+
 In the resulting Merkle tree, the even and odd nodes store different information:
 
 - Evens - List of data hashes [chunk0, chunk1, chunk2, ...]
 - Odds - List of Merkle hashes (hashes of child even nodes) [hash0, hash1, hash2, ...]
 
-These two lists get interleaved into a single register such that the indexes (position) in the register are the same as the bin numbers from the Merkle tree.
-
-All odd hashes are derived by hashing the two child nodes, e.g. given hash0 is `hash(chunk0)` and hash2 is `hash(chunk1)`, hash1 is `hash(hash0 + hash2)`.
-
-For example a register with two data entries would look something like this (pseudocode):
-
-```
-0. hash(chunk0)
-1. hash(hash(chunk0) + hash(chunk1))
-2. hash(chunk1)
-```
-
-It is possible for the in-order Merkle tree to have multiple roots at once. A root is defined as a parent node with a full set of child node slots filled below it.
-
-For example, this tree has 2 roots (1 and 4)
+In a merkle tree, the "root node" hashes the entire data set. In this example of 4 chunks, node 3 hashes the entire data set. Therefore we only need to trust node 3 to verify all data. As entries are added to a Hypercore register, the "active" root node will change.
 
 ```
 0
   1
 2
-
-4
-```
-
-This tree has one root (3):
-
-```
-0
-  1
-2
-    3
+    3 (root node)
 4
   5
 6
 ```
 
-This one has one root (1):
+It is possible for the in-order Merkle tree to have multiple roots at once. For example, let's expand our example dataset to contain six items. This will result in two roots:
 
 ```
 0
   1
 2
+    3 (root node)
+4
+  5
+6
+
+8
+  9 (root node)
+10
+```
+
+The nodes in this tree would be calculated as follows:
+
+```
+0 = h(chunk0)
+1 = h(0 + 2)
+2 = h(chunk1)
+3 = h(1 + 5)
+4 = h(chunk2)
+5 = h(4 + 6)
+6 = h(chunk3)
+
+8 = h(chunk4)
+9 = h(8 + 10)
+10 = h(chunk5)
+```
+
+In the Hypercore register, we only want one active root. Therefore, when there are multiple roots we hash all the roots together again. We also include a big endian uint64 binary representation of the corresponding node index (TODO: why?). At most there will be `log2(number of data blocks)`.
+
+```
+root = h(uint64be(#9) + 9 + uint64be(#3) + 3)
 ```
 
 
-## Replication Example
+## Root hash signatures
+[root-hash-signatures]: #root-hash-signatures
 
-This section describes in high level the replication flow of a Dat. Note that the low level details are available by reading the SLEEP section below. For the sake of illustrating how this works in practice in a networked replication scenario, consider a folder with two files:
+Merkle trees are used to produce hashes which identify the content of a dataset. If the content of the dataset changes, the resulting hashes will change.
 
-```
-bat.jpg
-cat.jpg
-```
+Hypercore registers are internally represented by merkle trees, but act as lists which support the `append()` mutation. When this method is called, a new leaf node is added to the tree, generating a new root hash.
 
-To send these files to another machine using Dat, you would first add them to a Dat repository by splitting them into chunks and constructing SLEEP files representing the chunks and filesystem metadata.
+To provide a persistent identifer for a Hypercore register, we generate an asymmetric keypair. The public key of the keypair is used as the identifier. Any time a new root hash is generated, it is signed using the private key. This signature is distributed with the root hash to provide verification of its integrity.
 
-Let's assume `bat.jpg` and `cat.jpg` both produce three chunks, each around 64KB. Dat stores in a representation called SLEEP, but here we will show a pseudo-representation for the purposes of illustrating the replication process. The six chunks get sorted into a list like this:
 
-```
-bat-1
-bat-2
-bat-3
-cat-1
-cat-2
-cat-3
-```
+## Verifying received data
+[verifying-received-data]: #verifying-received-data
 
-These chunks then each get hashed, and the hashes get arranged into a Merkle tree (the content register):
+To verify whether some received data belongs in a Hypercore register, you must also receive a set of ancestor hashes which include a signed root hash. The signature of the root hash will first be verified to ensure it belongs to the Hypercore. The received data will then be hashed with the ancestor hashes in order to reproduce the root hash. If the calculated root hash matches the received signed root hash, then the data's correctness has been verified.
+
+Let's look at an example for a register containing four values (chunks). Our tree of hashes will look like this:
 
 ```
-0          - hash(bat-1)
-    1      - hash(0 + 2)
-2          - hash(bat-2)
-        3  - hash(1 + 5)
-4          - hash(bat-3)
-    5      - hash(4 + 6)
-6          - hash(cat-1)
-8          - hash(cat-2)
-    9      - hash(8 + 10)
-10         - hash(cat-3)
+0
+  1
+2
+    3 (root node)
+4
+  5
+6
 ```
 
-Next we calculate the root hashes of our tree, in this case 3 and 9. We then hash them together, and cryptographically sign the hash. This signed hash now can be used to verify all nodes in the tree, and the signature proves it was produced by us, the holder of the private key for this Dat.
+We want to receive and verify the data for 0 (chunk0). To accomplish this, we need to receive:
 
-This tree is for the hashes of the contents of the photos. There is also a second Merkle tree that Dat generates that represents the list of files and their metadata and looks something like this (the metadata register):
+ - Chunk0
+ - 2, the sibling hash
+ - 5, the uncle hash
+ - 3, the signed root hash
+
+We will first verify the signature on 3. Then, we use the received data to recalculate 3:
 
 ```
-0 - hash({contentRegister: '9e29d624...'})
-  1 - hash(0 + 2)
-2 - hash({"bat.jpg", first: 0, length: 3})
-4 - hash({"cat.jpg", first: 3, length: 3})
+0 = h(chunk0)
+2 = (hash received)
+1 = h(0 + 2)
+5 = (hash received)
+3 = h(1 + 5)
 ```
 
-The first entry in this feed is a special metadata entry that tells Dat the address of the second feed (the content register). Note that node 3 is not included yet, because 3 is the hash of `1 + 5`, but 5 does not exist yet, so will be written at a later update.
+If our calculated 3 is equal to our received signed 3, then we know the chunk0 we received is valid.
 
-Now we're ready to send our metadata to the other peer. The first message is a `Register` message with the key that was shared for this Dat. Let's call ourselves Alice and the other peer Bob. Alice sends Bob a `Want` message that declares they want all nodes in the file list (the metadata register). Bob replies with a single `Have` message that indicates he has 2 nodes of data. Alice sends three `Request` messages, one for each leaf node (`0, 2, 4`). Bob sends back three `Data` messages. The first `Data` message contains the content register key, the hash of the sibling, in this case node `2`, the hash of the uncle root `4`, as well as a signature for the root hashes (in this case `1, 4`). Alice verifies the integrity of this first `Data` message by hashing the metadata received for the content register metadata to produce the hash for node `0`. They then hash the hash `0` with the hash `2` that was included to reproduce hash `1`, and hashes their `1` with the value for `4` they received, which they can use the received signature to verify it was the same data. When the next `Data` message is received, a similar process is performed to verify the content.
+Since we only need uncle hashes to verify the block, the number of hashes we need is at worst `log2(number-of-blocks)` and the roots of the merkle trees which has the same complexity.
 
-Now Alice has the full list of files in the Dat, but decides they only want to download `cat.png`. Alice knows they want blocks 3 through 6 from the content register. First Alice sends another `Register` message with the content key to open a new replication channel over the connection. Then Alice sends three `Request` messages, one for each of blocks `4, 5, 6`. Bob sends back three `Data` messages with the data for each block, as well as the hashes needed to verify the content in a way similar to the process described above for the metadata feed.
+Notice that all new signatures verify the entire dataset since they all sign a merkle tree that spans all data. If a signed update ever conflicts against previously-verified trees, suggesting a change in the history of data, the feed is considered "corrupt" and replication will stop. This serves to disincentivize changes to old data and avoids complexity around identifying the canonical history.
+
+
+# Specifications and parameters
+[specifications-and-parameters]: #specifications-and-parameters
+
+TODO: list what kind of hashes and asymmetric keys are used
+
+TODO: list any parameters (entry sizes)
 
 
 # Drawbacks
