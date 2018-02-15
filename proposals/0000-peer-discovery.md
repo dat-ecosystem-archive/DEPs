@@ -26,6 +26,22 @@ Peer discovery can happen over many kinds of networks. In the Dat implementation
 Additional discovery networks can be implemented as needed. We chose the above three as a starting point to have a complementary mix of strategies to increase the probability of source discovery.
 
 
+# Discovery keys
+
+By watching a peer discovery network, it could be possible to know what content is being published on the network. This is not always desirable, especially if the data being shared is meant to be private. To handle this, Dat uses "discovery keys," which obscures which content is actually being shared.
+
+Discovery key construction can vary by the type of data being shared. For Hypercore feeds, the discovery key is a blake2b hash of the message `"HYPERCORE"` with the feed's pubkey used as the authentication code.
+
+```js
+var discoveryKey = new Buffer(32)
+sodium.crypto_generichash(
+  discoveryKey, // out
+  'HYPERCORE',  // in (message)
+  publicKey     // key
+)
+```
+
+
 # Peer discovery methods
 [peer-discovery-methods]: #peer-discovery-methods
 
@@ -37,13 +53,13 @@ Dat uses multiple discovery networks, to provide redundancy and to suit differin
 
 Multicast DNS (mDNS) resolves host names to IP addresses within small networks without a local name server. It is a zero-configuration service, using essentially the same interfaces, packet formats and operating semantics as unicast DNS. The mDNS protocol is published as [RFC 6762](https://tools.ietf.org/html/rfc6762) and is built on multicast UDP.
 
-Dat treats Hypercore public keys as domain names on the mDNS protocol. Therefore, peer discovery is an IP lookup for a given public key name. Currently the public key is encoded to hex and truncated to 40 bytes. The domain name format used is:
+Dat treats discovery-keys as domain names on the mDNS protocol. Therefore, peer discovery is an IP lookup for a given discovery-key name. Currently the discovery-key is encoded to hex and truncated to 40 bytes. The domain name format used is:
 
 ```
-{PUBKEY}.dat.local
+{DISCOVERY_KEY}.dat.local
 ```
 
-Dat uses the `TXT` record type. A query is submitted as a simple `TXT` query for `{PUBKEY}.dat.local`. The response provides a peer-listing which will only include the local node, if it is actively hosting the requested Hypercore.
+Dat uses the `TXT` record type. A query is submitted as a simple `TXT` query for `{DISCOVERY_KEY}.dat.local`. The response provides a peer-listing which will only include the local node, if it is actively hosting the requested Hypercore.
 
 
 ### TXT data encoding
@@ -85,13 +101,13 @@ This token must be included in queries which include mutation fields in the "add
 
 The token is requested by sending a `TXT` record to the DNS server with a target name of `"dat.local"`. The server will respond with the token, plus the port and address of the sending device (which are useful as a "whoami").
 
-Over time, the server will rotate the secret it uses to generate tokens. In order to update clients' tokens, every response includes the latest token. The client should update its token with every response it receives. (It's advised that the server keeps the most recently expired secre so that old tokens can be accepted and replaced smoothly.)
+Over time, the server will rotate the secret it uses to generate tokens. In order to update clients' tokens, every response includes the latest token. The client should update its token with every response it receives. (It's advised that the server keeps the most recently expired secret so that old tokens can be accepted and replaced smoothly.)
 
 
 ### Lookup query
 [dns-name-server-lookup-query]: #dns-name-server-lookup-query
 
-To request the current list of known peers for a pubkey, send a `TXT` question query with `{PUBKEY}.dat.local` as the name. Currently the public key is encoded to hex and truncated to 40 bytes. You will receive a response that includes a full peer listing and the latest token. See "TXT data encoding" above for information about encoding.
+To request the current list of known peers for a discovery-key, send a `TXT` question query with `{DISCOVERY_KEY}.dat.local` as the name. Currently the discovery key is encoded to hex and truncated to 40 bytes. You will receive a response that includes a full peer listing and the latest token. See "TXT data encoding" above for information about encoding.
 
 Every query may include a `TXT` "additional" section which includes the session token and any behavior fields (described below).
 
@@ -127,7 +143,7 @@ The `unannounce` field instructs the DNS name server to remove the device from t
 
 Mainline DHT is the name given to the Kademlia-based Distributed Hash Table (DHT) used by BitTorrent clients to find peers. Dat has adopted it temporarily to track peers in its own network. You can find the specification at [BEP 0005](http://www.bittorrent.org/beps/bep_0005.html).
 
-There are some issues with Dat's use of Mainline which limit the usefulness of its function. BitTorrent uses a 20 byte sha1 hash to identify torrents, while Dat uses a 32 byte public key to identify Hypercore registers. As a result, Dat has to truncate its keys to the first 20 bytes, leading to false positives when connecting to peers.
+There are some issues with Dat's use of Mainline which limit the usefulness of its function. BitTorrent uses a 20 byte sha1 hash to identify torrents, while Dat uses a 32 byte discovery key to identify Hypercore feeds. As a result, Dat has to truncate its keys to the first 20 bytes, leading to false positives when connecting to peers.
 
 
 # Privacy concerns
