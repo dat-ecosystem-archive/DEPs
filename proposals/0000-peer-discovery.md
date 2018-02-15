@@ -17,13 +17,7 @@ Authors: [Paul Frazee](https://github.com/pfrazee)
 
 An important aspect of Dat's networking is peer discovery, the techniques that peers use to find each other. Peer discovery means finding the IP and port of data sources online that have a copy of that data you are looking for. You can then connect to them and begin exchanging data. By using peer discovery techniques Dat is able to create a network where data can be discovered even if the original data source disappears.
 
-Peer discovery can happen over many kinds of networks, as long as you can model the following actions:
-
-- `join(key, [port])` - Begin performing regular lookups on an interval for `key`. Specify `port` if you want to announce that you share `key` as well.
-- `leave(key, [port])` - Stop looking for `key`. Specify `port` to stop announcing that you share `key` as well.
-- `foundpeer(key, ip, port)` - Called when a peer is found by a lookup.
-
-In the Dat implementation we implement the above actions on top of three types of discovery networks:
+Peer discovery can happen over many kinds of networks. In the Dat implementation we currently implement discovery on top of three networks:
 
 - Multicast DNS - Useful for discovering peers on local networks
 - DNS name servers - An Internet standard mechanism for resolving keys to addresses
