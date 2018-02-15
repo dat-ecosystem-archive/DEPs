@@ -121,7 +121,7 @@ The push is sent as the "additional" section of an `SRV` query. It contains as i
 
 If a `TXT` lookup query is sent with an "additional" section that does not have the `subscribe` flag, that is treated as an "unsubscribe" message and the device is removed from the active listeners.
 
-TODO- what's the TTL?
+Subscriber records are automatically expired every 60-120 seconds, therefore a client should resubscribe every minute to continue to receive updates.
 
 
 #### Announce field
@@ -129,7 +129,7 @@ TODO- what's the TTL?
 
 The `announce` field instructs the DNS name server to add the device to the list of active hosting peers for the given Hypercore. Its value should be the port from which the device is listening. Multiple ports may be announced using separate queries. Upon announce, the new peer is pushed to any subscribed devices using an `SRV` query.
 
-TODO- how long till announce records expire? Should the client reannounce periodically?
+Announce records are automatically expired after a configurable time period (5-10 minutes is recommended) therefore a client should reannounce periodically to stay active.
 
 
 #### Unannounce field
