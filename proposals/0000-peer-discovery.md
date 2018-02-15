@@ -70,7 +70,7 @@ TXT record data is encoded as key/values using [RFC 6763](https://tools.ietf.org
 Peer listings are a base64-encoded buffer of 6-byte peer items. Each peer item is packed as follows:
 
 ```
-{4 bytes: IPv4 address}{2 bytes: port}
+{4 bytes: IPv4 address}{2 bytes: port (big endian)}
 ```
 
 
