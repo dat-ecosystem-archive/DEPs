@@ -156,11 +156,14 @@ There are many solutions to explore to this issue:
  - Private discovery networks. This will reduce the number of possible data sources, which reduces the success rate of discovery, but also limits the exposure of the user's activity.
  - Proxy services. This will increase the latency of traffic and will expose all activity to the proxy, but it will mask the user's activity among the activity of all proxy users.
 
+By watching a peer discovery network, it could be possible to know what content is being published on the network. This is not always desirable, especially if the data being shared is meant to be private. To handle this, Dat uses the "discovery key," which is a hash of the dataset identifier. As the Dat wire protocol uses the dataset identifiers as read capabilities and encrypts all traffic, it is impossible to monitor Dat's discovery network to discover content without previously possessing the identifier. This protection has some limits; if the identifier of a dataset is leaked, then the discovery key will be known as well, and it will be known who is sharing the dataset, and if the traffic is logged then this can be known retroactively.
+
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
  - Does the DNS network *need* to truncate the public key to 40 bytes? Could we fit the full 64 bytes by using another level of subdomain?
+ - If I go through a valid "probe" step, acquire a session token, and then announce multiple ports, that would seem to increase the full peer listing arbitrarily. Since simple lookups do not require a token, then it should be possible for me to spoof the IP address in simple lookups and use (previously constructed) arbitrarily large full peer listing to execute DoS on a target. Do we need to require a token for all requests to avoid an amplification attack?
 
 
 # Changelog
