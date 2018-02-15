@@ -15,9 +15,9 @@ Authors: [Paul Frazee](https://github.com/pfrazee)
 # Summary
 [summary]: #summary
 
-Hypercore Registers are the core mechanism used in Dat. They are binary append-only streams whose contents are cryptographically hashed and signed and therefore can be verified by anyone with access to the public key of the writer. They are an implementation of the concept known as a register, a digital ledger you can trust.
+Hypercore Feeds are the core mechanism used in Dat. They are binary append-only streams whose contents are cryptographically hashed and signed and therefore can be verified by anyone with access to the public key of the writer.
 
-Dat uses two registers, `content` and `metadata`. The `content` register contains the files in your repository and `metadata` contains the metadata about the files including name, size, last modified time, etc. Dat replicates them both when synchronizing with another peer.
+Dat uses two feeds, `content` and `metadata`. The `content` feed contains the files in your repository and `metadata` contains the metadata about the files including name, size, last modified time, etc. Dat replicates them both when synchronizing with another peer.
 
 
 # Motivation
@@ -36,9 +36,9 @@ To ensure files are hosted correctly and can be referenced at different points i
 # Append-only Lists
 [append-only-lists]: #append-only-lists
 
-The Hypercore register is an append-only list. The content of each list entry is an arbitrary blob of data. It can be replicated partially or fully over the network, and data can be received from multiple peers at once.
+The Hypercore feed is an append-only list. The content of each list entry is an arbitrary blob of data. It can be replicated partially or fully over the network, and data can be received from multiple peers at once.
 
-Internally, the Hypercore register is represented by a signed merkle tree. The tree is identified on the network with a public key, which is then used to verify the signatures on received data. The tree is represented as a "Flat In-Order Tree."
+Internally, the Hypercore feed is represented by a signed merkle tree. The tree is identified on the network with a public key, which is then used to verify the signatures on received data. The tree is represented as a "Flat In-Order Tree."
 
 
 ## Flat In-Order Trees
@@ -99,9 +99,9 @@ The roots spanning all the above leafs are 3 an 9. Throughout this document we'l
 ## Merkle Trees
 [merkle-trees]: #merkle-trees
 
-A merkle tree is a binary tree where every leaf is a hash of a data block and every parent is the hash of both of its children. Hypercore registers are merkle trees encoded with "bin numbers" (see above).
+A merkle tree is a binary tree where every leaf is a hash of a data block and every parent is the hash of both of its children. Hypercore feeds are merkle trees encoded with "bin numbers" (see above).
 
-Let's look at an example. A register containing four values would be mapped to the even numbers 0, 2, 4, and 6.
+Let's look at an example. A feed containing four values would be mapped to the even numbers 0, 2, 4, and 6.
 
 ```
 chunk0 -> 0
@@ -127,7 +127,7 @@ In the resulting Merkle tree, the even and odd nodes store different information
 - Evens - List of data hashes [chunk0, chunk1, chunk2, ...]
 - Odds - List of Merkle hashes (hashes of child even nodes) [hash0, hash1, hash2, ...]
 
-In a merkle tree, the "root node" hashes the entire data set. In this example of 4 chunks, node 3 hashes the entire data set. Therefore we only need to trust node 3 to verify all data. As entries are added to a Hypercore register, the "active" root node will change.
+In a merkle tree, the "root node" hashes the entire data set. In this example of 4 chunks, node 3 hashes the entire data set. Therefore we only need to trust node 3 to verify all data. As entries are added to a Hypercore feed, the "active" root node will change.
 
 ```
 0
@@ -171,7 +171,7 @@ The nodes in this tree would be calculated as follows:
 10 = h(chunk5)
 ```
 
-In the Hypercore register, we only want one active root. Therefore, when there are multiple roots we hash all the roots together again. We also include a big endian uint64 binary representation of the corresponding node index (TODO: why?). At most there will be `log2(number of data blocks)`.
+In the Hypercore feed, we only want one active root. Therefore, when there are multiple roots we hash all the roots together again. We also include a big endian uint64 binary representation of the corresponding node index (TODO: why?). At most there will be `log2(number of data blocks)`.
 
 ```
 root = h(uint64be(#9) + 9 + uint64be(#3) + 3)
@@ -183,17 +183,17 @@ root = h(uint64be(#9) + 9 + uint64be(#3) + 3)
 
 Merkle trees are used to produce hashes which identify the content of a dataset. If the content of the dataset changes, the resulting hashes will change.
 
-Hypercore registers are internally represented by merkle trees, but act as lists which support the `append()` mutation. When this method is called, a new leaf node is added to the tree, generating a new root hash.
+Hypercore feeds are internally represented by merkle trees, but act as lists which support the `append()` mutation. When this method is called, a new leaf node is added to the tree, generating a new root hash.
 
-To provide a persistent identifer for a Hypercore register, we generate an asymmetric keypair. The public key of the keypair is used as the identifier. Any time a new root hash is generated, it is signed using the private key. This signature is distributed with the root hash to provide verification of its integrity.
+To provide a persistent identifer for a Hypercore feed, we generate an asymmetric keypair. The public key of the keypair is used as the identifier. Any time a new root hash is generated, it is signed using the private key. This signature is distributed with the root hash to provide verification of its integrity.
 
 
 ## Verifying received data
 [verifying-received-data]: #verifying-received-data
 
-To verify whether some received data belongs in a Hypercore register, you must also receive a set of ancestor hashes which include a signed root hash. The signature of the root hash will first be verified to ensure it belongs to the Hypercore. The received data will then be hashed with the ancestor hashes in order to reproduce the root hash. If the calculated root hash matches the received signed root hash, then the data's correctness has been verified.
+To verify whether some received data belongs in a Hypercore feed, you must also receive a set of ancestor hashes which include a signed root hash. The signature of the root hash will first be verified to ensure it belongs to the Hypercore. The received data will then be hashed with the ancestor hashes in order to reproduce the root hash. If the calculated root hash matches the received signed root hash, then the data's correctness has been verified.
 
-Let's look at an example for a register containing four values (chunks). Our tree of hashes will look like this:
+Let's look at an example for a feed containing four values (chunks). Our tree of hashes will look like this:
 
 ```
 0
@@ -262,7 +262,6 @@ IPFS is designed for immutable hash-addressed content, but it provides a mechani
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- Is the term "Register" the best for describing the Hypercore structure? What about "Log" or "Feed" ?
 - Is there a potential "branch resolution" protocol which could remove the [linear history requirement](#linear-history-requirement) and therefore enable users to share private keys freely between their devices? Explaining the risks of branches to users is difficult.
 
 
