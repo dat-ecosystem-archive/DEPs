@@ -164,6 +164,7 @@ By watching a peer discovery network, it could be possible to know what content 
 
  - Does the DNS network *need* to truncate the public key to 40 bytes? Could we fit the full 64 bytes by using another level of subdomain?
  - If I go through a valid "probe" step, acquire a session token, and then announce multiple ports, that would seem to increase the full peer listing arbitrarily. Since simple lookups do not require a token, then it should be possible for me to spoof the IP address in simple lookups and use (previously constructed) arbitrarily large full peer listing to execute DoS on a target. Do we need to require a token for all requests to avoid an amplification attack?
+ - The DNS tokens should be generated with blake2b instead of sha256
 
 
 # Changelog
