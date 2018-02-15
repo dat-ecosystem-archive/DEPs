@@ -15,7 +15,7 @@ Authors: [Paul Frazee](https://github.com/pfrazee)
 # Summary
 [summary]: #summary
 
-Hyperdrive archives are the top-level abstraction in Dat. They provide an interface for listing, reading, and writing files and folders. Each Hyperdrive is constructed using two Hypercore registers: one for representing the file metadata, and the other for representing the file content.
+Hyperdrive archives are the top-level abstraction in Dat. They provide an interface for listing, reading, and writing files and folders. Each Hyperdrive is constructed using two Hypercore feeds: one for representing the file metadata, and the other for representing the file content.
 
 As an example, consider a folder with two files:
 
@@ -24,7 +24,7 @@ bat.jpg
 cat.jpg
 ```
 
-These files are added to a Hyperdrive archive by splitting them into chunks and constructing Hypercore registers representing the chunks and filesystem metadata.
+These files are added to a Hyperdrive archive by splitting them into chunks and constructing Hypercore feeds representing the chunks and filesystem metadata.
 
 Let's assume `bat.jpg` and `cat.jpg` both produce three chunks, each around 64KB. Here we will show a pseudo-representation for the purposes of illustrating the replication process. The six chunks get sorted into a list like this:
 
@@ -37,7 +37,7 @@ cat-2
 cat-3
 ```
 
-Via Hypercore, these chunks are hashed, and the hashes are arranged into a Merkle tree (the content register):
+Via Hypercore, these chunks are hashed, and the hashes are arranged into a Merkle tree (the content feed):
 
 ```
 0          - hash(bat-1)
@@ -52,16 +52,16 @@ Via Hypercore, these chunks are hashed, and the hashes are arranged into a Merkl
 10         - hash(cat-3)
 ```
 
-This tree is for the hashes of the contents of the photos. There is also a second Hypercore register that Hyperdrive generates that represents the list of files and their metadata and looks something like this (the metadata register):
+This tree is for the hashes of the contents of the photos. There is also a second Hypercore feed that Hyperdrive generates that represents the list of files and their metadata and looks something like this (the metadata feed):
 
 ```
-0 - hash({contentRegister: '9e29d624...'})
+0 - hash({contentFeed: '9e29d624...'})
   1 - hash(0 + 2)
 2 - hash({"bat.jpg", offset: 0, length: 3})
 4 - hash({"cat.jpg", offset: 3, length: 3})
 ```
 
-The first entry in this feed is a special metadata entry that tells Dat the address of the second feed, the content register. The remaining two entries declare the existence of the two files, and indicate where to find their data in the content register.
+The first entry in this feed is a special metadata entry that tells Dat the address of the second feed, the content feed. The remaining two entries declare the existence of the two files, and indicate where to find their data in the content feed.
 
 
 # File archives
@@ -73,13 +73,13 @@ TODO
 ## File metadata
 [file-metadata]: #file-metadata
 
-Dat tries as much as possible to act as a one-to-one mirror of the state of a folder and all its contents. When importing files, Dat uses a sorted, depth-first recursion to list all the files in the tree. For each file it finds, it grabs the filesystem metadata (filename, Stat object, etc) and appends the data to the metadata register.
+Dat tries as much as possible to act as a one-to-one mirror of the state of a folder and all its contents. When importing files, Dat uses a sorted, depth-first recursion to list all the files in the tree. For each file it finds, it grabs the filesystem metadata (filename, Stat object, etc) and appends the data to the metadata feed.
 
 
 ## Append-tree data structure
 [append-tree-data-structure]: #append-tree-data-structure
 
-"Append-tree" is a tree data structure modeled on top of an append-only log (the Hypercore register). The data structure stores a small index for every entry in the log so that no external indexing is required to model the tree. It also provides fast lookups on sparsely replicated logs.
+"Append-tree" is a tree data structure modeled on top of an append-only log (the Hypercore feed). The data structure stores a small index for every entry in the log so that no external indexing is required to model the tree. It also provides fast lookups on sparsely replicated logs.
 
 TODO- describe
 
@@ -87,13 +87,13 @@ TODO- describe
 # Hypercore entry schemas
 [hypercore-entry-schemas]: #hypercore-entry-schemas
 
-Hyperdrive encodes its data to its Hypercore registers using Google's [protobuf](https://developers.google.com/protocol-buffers/) encoding.
+Hyperdrive encodes its data to its Hypercore feeds using Google's [protobuf](https://developers.google.com/protocol-buffers/) encoding.
 
 
 ## Index
 [hypercore-entry-schema-index]: #hypercore-entry-schema-index
 
-The schema of the first entry written in every metadata Hypercore register. The `type` field will contain the string `"hyperdrive"`. The `content` field will contain the public key of the content Hypercore register.
+The schema of the first entry written in every metadata Hypercore feed. The `type` field will contain the string `"hyperdrive"`. The `content` field will contain the public key of the content Hypercore feed.
 
 ```
 message Index {
@@ -106,7 +106,7 @@ message Index {
 ## Node
 [hypercore-entry-schema-node]: #hypercore-entry-schema-node
 
-This entry schema encodes a file in the metadata Hypercore register. The `name` field is a string providing the file-path. The `value` field is a Stat object, using the `Stat` encoding (below). The `paths` field is an index used to optimize lookups (TODO how?).
+This entry schema encodes a file in the metadata Hypercore feed. The `name` field is a string providing the file-path. The `value` field is a Stat object, using the `Stat` encoding (below). The `paths` field is an index used to optimize lookups (TODO how?).
 
 ```
 message Node {
@@ -120,7 +120,7 @@ message Node {
 ## Stat
 [hypercore-entry-schema-stat]: #hypercore-entry-schema-stat
 
-This schema encodes the "Stat" of a file in the metadata Hypercore register. TODO- describe fields.
+This schema encodes the "Stat" of a file in the metadata Hypercore feed. TODO- describe fields.
 
 ```
 message Stat {
