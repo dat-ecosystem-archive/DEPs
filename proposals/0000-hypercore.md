@@ -171,10 +171,10 @@ The nodes in this tree would be calculated as follows:
 10 = h(chunk5)
 ```
 
-In the Hypercore feed, we only want one active root. Therefore, when there are multiple roots we hash all the roots together again. We also include a big endian uint64 binary representation of the corresponding node index to ensure that the hash describes the tree structure and not just the underlying data. At most there will be `log2(number of data blocks)`.
+In the Hypercore feed, we only want one active root. Therefore, when there are multiple roots we hash all the roots together again. At most there will be `log2(number of data blocks)`.
 
 ```
-root = h(uint64be(#9) + 9 + uint64be(#3) + 3)
+root = h(9 + 3)
 ```
 
 
@@ -229,12 +229,61 @@ Since we only need uncle hashes to verify the block, the number of hashes we nee
 Notice that all new signatures verify the entire dataset since they all sign a merkle tree that spans all data. If a signed update ever conflicts against previously-verified trees, suggesting a change in the history of data, the feed is considered "corrupt" and replication will stop. This serves to disincentivize changes to old data and avoids complexity around identifying the canonical history.
 
 
-# Specifications and parameters
-[specifications-and-parameters]: #specifications-and-parameters
+# Hash and signature functions
+[hash-and-signature-functions]: #hash-and-signature-functions
 
-TODO: list what kind of hashes and asymmetric keys are used
+The hash function used is `blake2b-256`. The signatures are `ed25519` with the `sha-512` hash function.
 
-TODO: list any parameters (entry sizes)
+To protect against a ["second preimage attack"](https://en.m.wikipedia.org/wiki/Merkle_tree#Second_preimage_attack), hash functions have constants prepended to their inputs based on the type of data being hashed. These constants are:
+
+ - `0x00` - Leaf
+ - `0x01` - Parent
+ - `0x02` - Root
+
+Hashes will frequently include the sizes and indexes of their content in order to describe the structure of the tree, and not simply the data within the tree.
+
+The cryptographic functions are defined as follows:
+
+```js
+// uint64be() encodes as a big-endian unsigned 64-bit int
+
+function leaf_hash (data) {
+  return blake2b([
+    Buffer.from([0]),      // leaf constant, 0x00
+    uint64be(data.length), // entry length in bytes
+    data                   // entry data
+  ])
+}
+
+function parent_hash (left, right) {
+  if (left.index > right.index) {
+    [left, right] = [right, left] // swap
+  }
+
+  return blake2b([
+    Buffer.from([1]), // parent constant, 0x01
+    uint64be(left.size + right.size),
+    left.hash,
+    right.hash
+  ])
+}
+
+function root_hash (roots) {
+  var buffers = new Array(3 * roots.length + 1)
+  var j = 0
+
+  buffers[j++] = Buffer.from([2]) // root constant, 0x02
+
+  for (var i = 0; i < roots.length; i++) {
+    var r = roots[i]
+    buffers[j++] = r.hash
+    buffers[j++] = uint64be(r.index)
+    buffers[j++] = uint64be(r.size)
+  }
+
+  return blake2b(buffers)
+}
+```
 
 
 # Drawbacks
