@@ -285,6 +285,16 @@ function root_hash (roots) {
 }
 ```
 
+# Parameters
+[parameters]: #parameters
+
+## Entry size
+[parameters-entry-size]: #parameters-entry-size
+
+The maximum size of a Hypercore feed entry is 8mb.
+
+The Hypercore wire protocol applies an 10mb limit to message sizes. Accoringly, all entries on a Hypercore feed have an 8mb limit, to fit into a single message. Note that the 10mb/8mb limit is arbitrary and may be increased in the future.
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
