@@ -305,13 +305,13 @@ Hypercore assumes that ownership of the private key is tantamount to authorship.
 
 The Hypercore log is conceptually similar to Secure Scuttlebutt's log structure; both are designed to provide a single append-only history and to verify the integrity using only a public key identifier. However, Secure Scuttlebutt uses a Linked List structure with content-hash pointers to construct its log while Hypercore uses a Merkle Tree. This decision increases the amount of hashes computed and stored in Hypercore, but it enables more efficient partial replication of the dataset over the network as trees enable faster comparisons of dataset availability and verification of integrity. (Citation needed?)
 
-IPFS is designed for immutable hash-addressed content, but it provides a mechanism for mutable content using public key addresses (IPNS). IPNS is still under development but some concepts are established. Its premise is much simpler than Hypercore's; rather than encoding the history in a standard form, IPNS simply signs and publishes a content-hash identifier under the public key, therefore creating a `pubkey -> hash` lookup. The referenced content may choose to encode a history, but it is not required and no constraints on branching is enforced. Compared to Hypercore, IPNS may be more user-friendly as it does not suffer from a catastrophic error if the history splits, therefore enabling users to share private keys freely between devices. This comes at the cost that history may be freely rewritten by the dataset author.
+IPFS is designed for immutable hash-addressed content, but it provides a mechanism for mutable content using public key addresses (IPNS). IPNS is still under development but some concepts are established. Its premise is much simpler than Hypercore's; rather than encoding the history in a standard form, IPNS simply signs and publishes a content-hash identifier under the public key, therefore creating a `pubkey -> hash` lookup. The referenced content may choose to encode a history, but it is not required and no constraints on branching is enforced. Compared to Hypercore, IPNS may be more user-friendly as it does not suffer from a catastrophic error if the history splits, therefore enabling users to share private keys freely between devices. This comes at the cost that history may be freely rewritten by the dataset author. Hypercore is also better suited to realtime streaming as it's possible to subscribe to optimistic broadcasts of updates.
 
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- Is there a potential "branch resolution" protocol which could remove the [linear history requirement](#linear-history-requirement) and therefore enable users to share private keys freely between their devices? Explaining the risks of branches to users is difficult.
+- Is there a potential "branch resolution" protocol which could remove the [linear history requirement](#linear-history-requirement) and therefore enable users to share private keys freely between their devices? Explaining the risks of branches to users is difficult. (This is being explored.)
 
 
 # Changelog
