@@ -1,15 +1,15 @@
 
-Title: **DEP-0000: Hypercore**
+Title: **DEP-0002: Hypercore**
 
-Short Name: `0000-hypercore`
+Short Name: `0002-hypercore`
 
 Type: Standard
 
-Status: Undefined (as of 2018-02-05)
+Status: Draft (as of 2018-02-21)
 
 Github PR: (add HTTPS link here after PR is opened)
 
-Authors: [Paul Frazee](https://github.com/pfrazee)
+Authors: [Paul Frazee](https://github.com/pfrazee), [Mathias Buus](https://github.com/mafintosh)
 
 
 # Summary
@@ -327,7 +327,4 @@ IPFS is designed for immutable hash-addressed content, but it provides a mechani
 # Changelog
 [changelog]: #changelog
 
-A brief statemnt about current status can go here, follow by a list of dates
-when the status line of this DEP changed (in most-recent-last order).
-
-- YYYY-MM-DD: First complete draft submitted for review
+- 2018-02-21: First full draft of DEP-0002 submitted for review.
