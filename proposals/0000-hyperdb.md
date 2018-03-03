@@ -5,11 +5,11 @@ Short Name: `0000-hyperdb`
 
 Type: Standard
 
-Status: Undefined (as of 2018-02-XX)
+Status: Undefined (as of 2018-03-XX)
 
 Github PR: (add HTTPS link here after PR is opened)
 
-Authors: noffle (Stephen Whitmore), bnewbold (Bryan Newbold)
+Authors: [Stephen Whitmore](https://github.com/noffle), [Bryan Newbold](https://github.com/bnewbold)
 
 
 # Summary
@@ -36,9 +36,11 @@ directories. This is a real-world bottleneck for several current users, with
 basic local actions such as adding a directory taking an unacceptably long time
 to complete.
 
-A secondary benefit is to refactor the trie-structured key/value API out of
-hyperdrive, allowing third party code to build applications directly on this
-abstraction layer.
+A secondary benefit is to refactor the [trie][trie]-structured key/value API
+out of hyperdrive, allowing third party code to build applications directly on
+this abstraction layer.
+
+[trie]: https://en.wikipedia.org/wiki/Trie
 
 
 # Usage Documentation
@@ -56,8 +58,10 @@ for changes on `/foo/bar` will report both changes to `/foo/bar/baz` and also
 
 Lower-level details of the hypercore append-only log, disk serialization, and
 networked synchronization features that HyperDB builds on top of are not
-described in detail here. Multi-writer hypercore details are also not discussed
-in this DEP. References to formal documentation of these details are TODO.
+described in detail here; see the [DEP repository][deps]. Multi-writer
+hypercore semantics are also not discussed in this DEP.
+
+[deps]: https://github.com/datprotocol/DEPs
 
 A HyperDB database instance can be represented by a single hypercore feed (or
 several feeds in a multi-writer context), and is named, referenced, and
@@ -67,7 +71,10 @@ single node (holding the secret key) can mutate the database (eg, via `put` or
 `delete` actions).
 
 **Keys** can be any UTF-8 string. Path segments are separated by the forward
-slash character (`/`).
+slash character (`/`). Repeated slashes (`//`) are disallowed. Leading and
+trailing `/` are optional in application code: `/hello` and `hello` are
+equivalent. A key can be both a "path segment" and key at the same time; eg,
+`/a/b/c` and `/a/b` can both be keys at the same time.
 
 **Values** can be any binary blob, including empty (of zero length). For
 example, values could be UTF-8 encoded strings, JSON encoded objects, protobuf
@@ -75,48 +82,53 @@ messages, or a raw `uint64` integer (of either endian-ness). Length is the only
 form of type or metadata stored about the value; deserialization and validation
 are left to library and application developers.
 
-TODO: key corner-cases:
-- `///` same as `//`? `///a` vs. `//a`?
-
-TODO: size limits on keys and values?
-
-TODO: "prefix" end in a trailing slash, or optional?
-
-A leading `/` is optional: `db.get('/hello')` and `db.get('hello')` are
-equivalent.
-
 ## Core API Semantics
 
-`db.put(key, value)`: inserts `value` (arbitrary bytes) under the path `key`.
-Returns an error (eg, via callback) if there was a problem.
+A `db` is instantiated by opening an existing hypercore with hyperdb content
+(read-only, or optionally read-write if the secret key is available), or
+creating a new one. A handle could represent any specific revision in history,
+or the "latest" revision.
 
-`db.get(key)`: Reading a non-existant `key` is an error.
+`db.put(key, value)`: inserts `value` (arbitrary bytes) under the path `key`.
+Requires read-write access.  Returns an error (eg, via callback) if there was a
+problem.
+
+`db.get(key)`: Reading a non-existant `key` is an error. Read-only.
 
 `db.delete(key)`: Removes the key from the database. Deleting a non-existant
-key is an error.
+key is an error. Requires read-write access.
 
 `db.list(prefix)`: returns a flat (not nested) list of all keys currently in
-the database.
+the database under the given prefix. Prefixes operate on a path-segment basis:
+`/ab` is not a valid prefix for key `/abcd`, but is valid for `/ab/cd`. If the
+prefix does not exist, returns an empty list. The order of returned keys is
+implementation (or configuration) specific. Read-only.
 
-TODO: in what order?
-
-TODO: what if node is a file, not a prefix?
+If the hypercore underlying a hyperdb is only partially replicated, behavior is
+implementation-specific. For example, a `get()` call could block until the
+relevant value is replicated, or the implementation could return an error.
 
 An example pseudo-code session working with a database might be:
 
-TODO:
-
-TODO: Read Stream
-
-TODO: Changes Stream
-
-TODO: Diff Stream
-
+    db.put('/life/animal/mammal/kitten', '{"cuteness": 500.3}')
+    db.put('/life/plant/bush/bananna', '{"delicious": 103.4}')
+    db.delete('/life/plant/bush/bananna')
+    db.put('/life/plant/tree/bananna', '{"delicious": 103.4}')
+    db.get('/life/animal/mammal/kitten')
+    => {"cuteness": 500.3}
+    db.list('/life/')
+    => ['/life/animal/mammal/kitten', '/life/plant/tree/bananna']
 
 # Reference Documentation
 [reference-documentation]: #reference-documentation
 
-The new Node protobuf message schema is:
+A HyperDB hypercore feed typically consists of a sequence of entries, all of
+which are protobuf-encoded `Node` messages. Higher-level protocols may make
+exception to this: for example, hyperdrive reserves the first entry of the
+(`metadata`) feed for a special entry that refers to the second (`content`)
+feed.
+
+The `Node` protobuf message schema is:
 
 ```
   message Node {
@@ -124,9 +136,17 @@ The new Node protobuf message schema is:
     optional bytes value = 2;
     repeated uint64 clock = 3;
     optional bytes trie = 4;
-    optional uint64 feedSeq = 6; // TODO remove and merge into index (trie+feedSeq)
+    optional uint64 feedSeq = 6;
   }
 ```
+
+TODO(mafintosh): where is this schema actually defined for the `next` branch of
+the hyperdb repo?
+
+`key` and `value` are as expected. A non-existant `value` indicates that this
+message is a deletion (see below). The `clock` element is reserved for use in
+the forthcoming `multi-writer` standard, not described here. An empty list is
+the safe (and expected) value for `clock` in single-writer use cases.
 
 ## Incremental Index
 
@@ -139,7 +159,7 @@ Each node stores the following basic information:
 
 - `key`: the key that is being created or modified. e.g. `/home/sww/dev.md`
 - `value`: the value stored at that key.
-- `seq`: the sequence number of this entry in the hypercore. 0 is the first, 1
+- `feedSeq`: the sequence number of this entry in the hypercore. 0 is the first, 1
   the second, and so forth.
 - `path`: a 2-bit hash sequence of the key's components
 - `trie`: a navigation structure used with `path` to find a desired key
@@ -233,6 +253,14 @@ This is how finding a node works, starting at any other node:
    Repeat until you reach step 4 (match) or there is no entry in the node's trie
    for the key you're after (no match).
 
+# Examples
+[examples]: #examples
+
+TODO: lookup a "deep" key
+
+TODO: deleting a key
+
+TODO: listing a prefix
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -246,24 +274,16 @@ For the specific use case of Dat archives, HyperDB will trivially increase
 metadata size (and thus disk and network consumption) for archives with few
 files.
 
+
 # Rationale and alternatives
 [alternatives]: #alternatives
 
-TODO: 
+TODO: scaling issues with existing system; handling many entries
 
-- Why is this design the best in the space of possible designs?
-- What other designs have been considered and what is the rationale for not choosing them?
-- What is the impact of not doing this?
+TODO: why multi-writer fields included here
 
-# Unresolved questions
-[unresolved]: #unresolved-questions
 
-TODO: 
-- What parts of the design do you expect to resolve through the DEP consensus process before this gets merged?
-- What parts of the design do you expect to resolve through implementation and code review, or are left to independent library or application developers?
-- What related issues do you consider out of scope for this DEP that could be addressed in the future independently of the solution that comes out of this DEP?
-
-# Dat Migration logistics
+# Dat migration logistics
 [migration]: #migration
 
 HyperDB is not backwards compatible with the existing hyperdrive metadata,
@@ -280,12 +300,32 @@ Upgrading a Dat (hyperdrive) archive to HyperDB will necessitate creating a new
 feed from scratch, meaning new public/private key pairs, and that public key
 URL links will need to change.
 
+
+# Unresolved questions
+[unresolved]: #unresolved-questions
+
+Details of keys to work out (before Draft status):
+
+- must a prefix end in a trailing slash, or optional?
+- can there be, eg, keys `/a/b` and `/a/b/c` at the same time?
+
+There are implied "reasonable" limits on the size (in bytes) of both keys and
+values, but they are not formally specified. Protobuf messages have a hard
+specified limit of 2 GByte (due to 32-bit signed arthimetic), and most
+implementations impose a (configurable) 64 MByte limit. Should this DEP impose
+specific limits on key and value sizes? Would be good to decide before Draft
+status.
+
+Apart from leaving fields in the protobuf message specification, multi-writer
+concerns are out of scope for this DEP.
+
+
 # Changelog
 [changelog]: #changelog
 
-As of January 2018, @mafintosh is leading development of a hyperdb nodejs
-module on [github](https://github.com/mafintosh/hyperdb), which is the basis
-for this DEP.
+As of March 2018, @mafintosh is leading development of a hyperdb nodejs module
+on [github](https://github.com/mafintosh/hyperdb), which is the basis for this
+DEP.
 
 - 2017-12-06: @noffle publishes `ARCHITECTURE.md` overview in the
   [hyperdb github repo][arch_md]
