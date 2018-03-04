@@ -320,7 +320,7 @@ The `user-type` is an index into the `extensions` array sent in the Handshake. F
 
 The `payload` may be any message content, as needed by the extension.
 
-````
+```
 <varint user-type><payload>
 ```
 
