@@ -7,9 +7,12 @@ Type: Standard
 
 Status: Undefined (as of 2018-03-XX)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: [https://github.com/datprotocol/DEPs/pull/3](https://github.com/datprotocol/DEPs/pull/3)
 
-Authors: [Stephen Whitmore](https://github.com/noffle), [Bryan Newbold](https://github.com/bnewbold)
+Authors:
+[Bryan Newbold](https://github.com/bnewbold),
+[Stephen Whitmore](https://github.com/noffle),
+[Mathias Buus](https://github.com/mafintosh)
 
 
 # Summary
@@ -567,12 +570,12 @@ concerns are out of scope for this DEP.
 # Changelog
 [changelog]: #changelog
 
-As of March 2018, @mafintosh is leading development of a hyperdb nodejs module
-on [github](https://github.com/mafintosh/hyperdb), which is the basis for this
-DEP.
+As of March 2018, Mathias Buus (@mafintosh) is leading development of a hyperdb
+nodejs module on [github](https://github.com/mafintosh/hyperdb), which is the
+basis for this DEP.
 
-- 2017-12-06: @noffle publishes `ARCHITECTURE.md` overview in the
-  [hyperdb github repo][arch_md]
-- 2018-02-XX: First complete draft submitted for review
+- 2017-12-06: Stephen Whitmore (@noffle) publishes `ARCHITECTURE.md` overview
+  in the [hyperdb github repo][arch_md]
+- 2018-03-04: First draft for review
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
