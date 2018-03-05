@@ -7,7 +7,7 @@ Type: Standard
 
 Status: Undefined (as of 2018-03-XX)
 
-Github PR: [https://github.com/datprotocol/DEPs/pull/3](https://github.com/datprotocol/DEPs/pull/3)
+Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/3)
 
 Authors:
 [Bryan Newbold](https://github.com/bnewbold),
