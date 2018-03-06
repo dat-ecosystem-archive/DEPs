@@ -7,7 +7,7 @@ Type: Standard
 
 Status: Draft (as of 2018-02-21)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: [Draft][https://github.com/datprotocol/DEPs/pull/4]
 
 Authors: [Paul Frazee](https://github.com/pfrazee), [Mathias Buus](https://github.com/mafintosh)
 
@@ -327,4 +327,5 @@ IPFS is designed for immutable hash-addressed content, but it provides a mechani
 # Changelog
 [changelog]: #changelog
 
-- 2018-02-21: First full draft of DEP-0002 submitted for review.
+- 2018-02-19: First full draft of DEP-0002 submitted for review.
+- 2018-02-21: DEP-0002 accepted as "Draft"
