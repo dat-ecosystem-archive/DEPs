@@ -564,12 +564,6 @@ mafintosh mentioned this might be in the works. Does this DEP need to "leave
 room" for those changes, or should we call out the potential for future change?
 (Probably not, should only describe existing solutions)
 
-Should all-zeros really be used for path hashing, or should we use the
-hypercore feed public key? It certainly makes implementation and documentation
-simpler to use all-zeros, and potentially makes it easier to copy or migrate
-HyperDB content between hypercore feeds. Referencing the feed public key breaks
-abstraction layers and the separation of concerns.
-
 There are implied "reasonable" limits on the size (in bytes) of both keys and
 values, but they are not formally specified. Protobuf messages have a hard
 specified limit of 2 GByte (due to 32-bit signed arthimetic), and most
