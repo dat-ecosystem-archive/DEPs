@@ -18,8 +18,8 @@ Authors:
 # Summary
 [summary]: #summary
 
-HyperDB is a new abstraction layer providing a general purpose distributed
-key/value store over the Dat protocol. It is an iteration on the hyperdrive
+HyperDB is an abstraction layer providing a general purpose distributed
+key/value store over the hypercore protocol. It is an iteration on the hyperdrive
 directory tree implementation, building top of the hypercore append-only log
 abstraction layer. Keys are path-like strings (eg, `/food/fruit/kiwi`), and
 values are arbitrary binary blobs (generally under a megabyte).
