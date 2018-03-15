@@ -574,6 +574,9 @@ status.
 Apart from leaving fields in the protobuf message specification, multi-writer
 concerns are out of scope for this DEP.
 
+Should we use "hyperdb" or "HyperDB"? bnewbold intends to switch to "hyperdb"
+in this document before Draft status.
+
 
 # Changelog
 [changelog]: #changelog
