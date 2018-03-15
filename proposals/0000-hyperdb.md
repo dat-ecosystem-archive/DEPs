@@ -116,13 +116,13 @@ relevant value is replicated, or the implementation could return an error.
 An example pseudo-code session working with a database might be:
 
     db.put('/life/animal/mammal/kitten', '{"cuteness": 500.3}')
-    db.put('/life/plant/bush/bananna', '{"delicious": 103.4}')
-    db.delete('/life/plant/bush/bananna')
-    db.put('/life/plant/tree/bananna', '{"delicious": 103.4}')
+    db.put('/life/plant/bush/banana', '{"delicious": 103.4}')
+    db.delete('/life/plant/bush/banana')
+    db.put('/life/plant/tree/banana', '{"delicious": 103.4}')
     db.get('/life/animal/mammal/kitten')
     => {"cuteness": 500.3}
     db.list('/life/')
-    => ['/life/animal/mammal/kitten', '/life/plant/tree/bananna']
+    => ['/life/animal/mammal/kitten', '/life/plant/tree/banana']
 
 
 # Reference Documentation
