@@ -334,7 +334,7 @@ Similarly, to write a key to the database:
 
 To delete a value, follow the same procedure as adding a key, but write the
 `Node` without a `value` (in protobuf, this is distinct from having a `value`
-field with zero bytes).
+field with zero bytes). Deletion nodes may persist in the database forever.
 
 # Examples
 [examples]: #examples
@@ -558,9 +558,11 @@ Need to think through deletion process with respect to listing a path prefix;
 will previously deleted nodes be occulded, or potentially show up in list
 results?
 
-Are the "deletion" semantics here correct, in that deletion Nodes persist as
-"tombstones", or should deleted keys be omitted from future `trie` fields to
-remove their presence?
+Can the deletion process (currently leaving "tombstone" entries in the `trie`
+forever) be improved, such that these entries don't need to be iterated over?
+mafintosh mentioned this might be in the works. Does this DEP need to "leave
+room" for those changes, or should we call out the potential for future change?
+(Probably not, should only describe existing solutions)
 
 Should all-zeros really be used for path hashing, or should we use the
 hypercore feed public key? It certainly makes implementation and documentation
