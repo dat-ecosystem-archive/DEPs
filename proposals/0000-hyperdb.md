@@ -182,7 +182,11 @@ TODO(mafintosh): should `feed` actually be the current hypercore publickey?
 
 Every key path has component-wise fixed-size hash representation that is used
 by the trie. This is written to the `path` field each Node protobuf
-message.
+message. The concatenation of all path hashes yields a hash for the entire key.
+Note that analagously to a hash map data structure, there can be more than one
+key (string) with the same key hash in the same database with no problems: the
+hash points to a bucket of keys, which can be iterated over linearly to find
+the correct value. 
 
 The path hash is represented by an array of bytes. Elements are 2-bit encoded
 (values 0, 1, 2, 3), except for an optional terminating element which has value
@@ -194,9 +198,9 @@ element hashes plus a terminator).
 The hash algorithm used is `SipHash-2-4`, with an 8-byte output and
 16-byte key; the input is the UTF-8 encoded path string segment, without any
 `/` separators or terminating null bytes. An implementation of this hash
-algorithm is included in the libsodium library, under the function
-`crypto_shorthash()`. A 16-byte "secret" key is required; for this use case we
-use all zeros.
+algorithm is included in the libsodium library in the form of the
+`crypto_shorthash()` function. A 16-byte "secret" key is required; for this use
+case we use all zeros.
 
 When converting the 8-bytehash to an array of 2-bit bytes, the ordering is
 proceed byte-by-byte, and for each take the two lowest-value bits (aka, `hash &
@@ -228,6 +232,12 @@ As another example, the key `/a/b/c` converts into the 97-byte hash array:
       0, 1, 2, 3, 2, 2, 2, 0, 3, 1, 1, 3, 0, 3, 1, 3, 0, 1, 0, 1, 3, 2, 0, 2, 2, 3, 2, 2, 3, 3, 2, 3,
       0, 1, 1, 0, 1, 2, 3, 2, 2, 2, 0, 0, 3, 1, 2, 1, 3, 3, 3, 3, 3, 3, 0, 3, 3, 2, 3, 2, 3, 0, 1, 0,
       4 ]
+
+Note that "hash collisions" are rare with this hashing scheme, but are likely
+to occur with large databases (millions of keys), and collision have been
+generated as a proof of concept. Implementions should take care to properly
+handle collisions by verifying keys and following bucket pointers (see the next
+section).
 
 <!---
 
@@ -283,12 +293,17 @@ To lookup a key in the database, the recipe is to:
 
 1. Calculate the `path` array for the key you are looking for.
 2. Select the most-recent ("latest") Node for the feed.
-3. Compare path arrays. If the paths match exactly, you have found the Node you
-   were looking for!
-4. If not, find the first index at which the two arrays differ, and look up the
-   corresponding element in this Node's `trie` array. If the element is empty,
-   then your key does not exist in this hyperdb.
-5. If the trie element is not empty, then follow that pointer to select the
+3. Compare path arrays. If the paths match exactly, compare keys; they match,
+   you have found the you were looking for! Check whether the `value` is
+   defined or not; if not, this Node represents that the key was deleted from
+   the database.
+4. If the paths match, but not the keys, look for a pointer in the last `trie`
+   array index, and iterate from step #3 with the new Node.
+5. If the paths don't entirely match, find the first index at which the two
+   arrays differ, and look up the corresponding element in this Node's `trie`
+   array. If the element is empty, then your key does not exist in this
+   hyperdb.
+6. If the trie element is not empty, then follow that pointer to select the
    next `Node`. Recursively repeat this process from step #3; you will be
    descending the `trie` in a search, and will either terminate in the Node you
    are looking for, or find that the key is not defined in this hyperdb.
@@ -299,24 +314,27 @@ Similarly, to write a key to the database:
    the same length; you will write to the `trie` array from the current index,
    which starts at 0.
 2. Select the most-recent ("latest") Node for the feed.
-3. Compare path arrays. If the paths match exactly, then you are overwriting
-   the current Node, and can copy the "remainder" of it's `trie` up to your
-   current `trie` index.
-4. If not, find the first index at which the two arrays differ. Copy all `trie`
-   elements (empty or not) into the new `trie` for indicies between the
-   "current index" and the "differing index".
-5. Next look up the corresponding element in this Node's `trie` array at the
+3. Compare path arrays. If the paths match exactly, and the keys match, then
+   you are overwriting the current Node, and can copy the "remainder" of it's
+   `trie` up to your current `trie` index.
+4. If the paths match, but not the keys, you are adding a new key to an
+   existing hash bucket. Copy the `trie` and extend it to the full length. Add
+   a pointer to the Node with the same hash at the final array index.
+5. If the paths don't entirely match, find the first index at which the two
+   arrays differ. Copy all `trie` elements (empty or not) into the new `trie`
+   for indicies between the "current index" and the "differing index".
+6. Next look up the corresponding element in this Node's `trie` array at the
    differing index. If this element is empty, then you have found the most
    similar Node. Write a pointer to this node to the `trie` at
    the differing index, and you are done (all remaining `trie` elements are
    empty, and can be omitted).
-6. If the differing tree element has a pointer (is not empty), then follow that
+7. If the differing tree element has a pointer (is not empty), then follow that
    pointer to select the next `Node`. Recursively repeat this process from step
    #3.
 
 To delete a value, follow the same procedure as adding a key, but write the
 `Node` without a `value` (in protobuf, this is distinct from having a `value`
-field with zero bytes)..
+field with zero bytes).
 
 # Examples
 [examples]: #examples
@@ -535,12 +553,6 @@ Further logistical details are left to the forthcoming Multi-Writer DEP.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
-
-How are hash collisions handled? Eg, two keys which have the same `path` hash
-array. How unlikely is this situation? Eg, how many keys in a database before
-the birthday paradox results in a realistic chance of a collision? How should
-implementations behave if they detect a collision (matching path but not
-matching key)?
 
 Need to think through deletion process with respect to listing a path prefix;
 will previously deleted nodes be occulded, or potentially show up in list
