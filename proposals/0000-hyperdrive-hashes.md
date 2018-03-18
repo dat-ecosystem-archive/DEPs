@@ -7,7 +7,7 @@ Type: Standard
 
 Status: Undefined (as of YYYY-MM-DD)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: [Discussion](https://github.com/datprotocol/DEPs/pull/12)
 
 Authors: [Bryan Newbold](https://github.com/bnewbold)
 
