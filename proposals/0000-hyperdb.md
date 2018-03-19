@@ -634,5 +634,6 @@ basis for this DEP.
 - 2017-12-06: Stephen Whitmore (@noffle) publishes `ARCHITECTURE.md` overview
   in the [hyperdb github repo][arch_md]
 - 2018-03-04: First draft for review
+- 2018-03-15: Hyperdb v3.0.0 is released
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
