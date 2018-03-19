@@ -1,5 +1,5 @@
 
-Title: **DEP-0000: HyperDB**
+Title: **DEP-0000: Hyperdb**
 
 Short Name: `0000-hyperdb`
 
@@ -18,7 +18,7 @@ Authors:
 # Summary
 [summary]: #summary
 
-HyperDB is an abstraction layer providing a general purpose distributed
+Hyperdb is an abstraction layer providing a general purpose distributed
 key/value store over the hypercore protocol. It is an iteration on the
 hyperdrive directory tree implementation, building top of the hypercore
 append-only log abstraction layer. Keys are path-like strings (eg,
@@ -26,7 +26,7 @@ append-only log abstraction layer. Keys are path-like strings (eg,
 megabyte).
 
 Hyperdrive (used by the Dat application) is expected to be re-implemented on
-top of HyperDB for improved performance with many files (eg, millions). The
+top of hyperdb for improved performance with many files (eg, millions). The
 hyperdrive API should be largely unchanged, but the `metadata` format will be
 backwards-incompatible.
 
@@ -34,7 +34,7 @@ backwards-incompatible.
 # Motivation
 [motivation]: #motivation
 
-HyperDB is expected to drastically improve performance of dat clients when
+Hyperdb is expected to drastically improve performance of dat clients when
 working with archives containing tens of thousands of files in single
 directories. This is a real-world bottleneck for several current users, with
 basic local actions such as adding a directory taking an unacceptably long time
@@ -50,24 +50,24 @@ this abstraction layer.
 # Usage Documentation
 [usage-documentation]: #usage-documentation
 
-*This section describes HyperDB's interface and behavior in the abstract for
+*This section describes Hyperdb's interface and behavior in the abstract for
 application programmers. It is not intended to be exact documentation of any
 particular implementation (including the reference Javascript module).*
 
-HyperDB is structured to be used much like a traditional hierarchical
+Hyperdb is structured to be used much like a traditional hierarchical
 filesystem. A value can be written and read at locations like `/foo/bar/baz`,
 and the API supports querying or tracking values at subpaths, like how watching
 for changes on `/foo/bar` will report both changes to `/foo/bar/baz` and also
 `/foo/bar/19`.
 
 Lower-level details of the hypercore append-only log, disk serialization, and
-networked synchronization features that HyperDB builds on top of are not
+networked synchronization features that Hyperdb builds on top of are not
 described in detail here; see the [DEP repository][deps]. Multi-writer
 hypercore semantics are also not discussed in this DEP.
 
 [deps]: https://github.com/datprotocol/DEPs
 
-A HyperDB database instance can be represented by a single hypercore feed (or
+A Hyperdb database instance can be represented by a single hypercore feed (or
 several feeds in a multi-writer context), and is named, referenced, and
 discovered using the public and discovery keys of the hypercore feed (or the
 original feed if there are several). In a single-writer configuration, only a
@@ -129,7 +129,7 @@ An example pseudo-code session working with a database might be:
 # Reference Documentation
 [reference-documentation]: #reference-documentation
 
-A HyperDB hypercore feed typically consists of a sequence of protobuf-encoded
+A hyperdb hypercore feed typically consists of a sequence of protobuf-encoded
 messages of either "Entry" or "InflatedEntry" type. Higher-level protocols may
 make exception to this, for example by prepending an application-specific
 metadata message as the first entry in the feed. There is sometimes a second
@@ -373,7 +373,7 @@ TODO(mafintosh)
 
 ## Simple Put and Get
 
-Starting with an empty HyperDB `db`, if we `db.put('/a/b', '24')` we expect to
+Starting with an empty hyperdb `db`, if we `db.put('/a/b', '24')` we expect to
 see a single `Entry` and index 0:
 
 ```
@@ -521,7 +521,7 @@ ecosystem: clients will need to support both versions protocol for some time
 (increasing maintenance burden), future clients may not interoperate with old
 archives, etc. These downsides can partially be avoided by careful roll-out.
 
-For the specific use case of Dat archives, HyperDB will trivially increase
+For the specific use case of Dat archives, hyperdb will trivially increase
 metadata size (and thus disk and network consumption) for archives with few
 files.
 
@@ -561,14 +561,14 @@ The total metadata overhead for a database with M entries scales with `O(M
 # Rationale and alternatives
 [alternatives]: #alternatives
 
-A major motivator for HyperDB is to improve scaling performance with tens of
+A major motivator for hyperdb is to improve scaling performance with tens of
 thousands through millions of files per directory in the existing hyperdrive
 implementation. The current implementation requires the most recent node in a
 directory to point to all other nodes in the directory. Even with pointer
-compression, this requires on the order of `O(N^2)` bytes; the HyperDB
+compression, this requires on the order of `O(N^2)` bytes; the hyperdb
 implementation scales with `O(N log(N))`.
 
-The HyperDB specification (this document) is complicated by the inclusion of
+The hyperdb specification (this document) is complicated by the inclusion of
 new protobuf fields to support "multi-writer" features which are not described
 here. The motivation to include these fields now to make only a single
 backwards-incompatible schema change, and to make a second software-only change
@@ -582,17 +582,17 @@ for these fields.
 # Dat migration logistics
 [migration]: #migration
 
-HyperDB is not backwards compatible with the existing hyperdrive metadata,
+Hyperdb is not backwards compatible with the existing hyperdrive metadata,
 meaning dat clients may need to support both versions during a transition
 period. This applies both to archives saved to disk (eg, in SLEEP) and to
 archives received and published to peers over the network.
 
 No changes to the Dat network wire protocol itself are necessary, only changes
 to content passed over the protocol. The Dat `content` feed, containing raw
-file data, is not impacted by HyperDB, only the contents of the `metadata`
+file data, is not impacted by hyperdb, only the contents of the `metadata`
 feed.
 
-Upgrading a Dat (hyperdrive) archive to HyperDB will necessitate creating a new
+Upgrading a Dat (hyperdrive) archive to hyperdb will necessitate creating a new
 feed from scratch, meaning new public/private key pairs, and that public key
 URL links will need to change.
 
@@ -621,9 +621,6 @@ status.
 
 Apart from leaving fields in the protobuf message specification, multi-writer
 concerns are out of scope for this DEP.
-
-Should we use "hyperdb" or "HyperDB"? bnewbold intends to switch to "hyperdb"
-in this document before Draft status.
 
 
 # Changelog
