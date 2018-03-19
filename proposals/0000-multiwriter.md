@@ -7,7 +7,7 @@ Type: Standard
 
 Status: Undefined (as of 2018-03-XX)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/10)
 
 Authors:
 [Bryan Newbold](https://github.com/bnewbold),
@@ -18,21 +18,24 @@ Authors:
 # Summary
 [summary]: #summary
 
-Multi-Writer is a set of schema, API, and feature extentions to multiple agents
-(users, devices, or software) to write to the same HyperDB feed. By building on
-top of this abstraction layer, future versions of hyperdrive and Dat will gain
-these features.
+Multi-Writer is a set of schema, API, and feature extentions to allow multiple
+agents (users, devices, or software) to write to the same hyperdb database. By
+building on top of this abstraction layer, future versions of hyperdrive and
+Dat will gain these features.
 
 Mechanisms for distributed consistency and granting trust are specified here;
 the need for merge conflict algorithms and secure key distribution are
 mentioned but specific solutions are not specified.
 
+This DEP forms the second half of the hyperdb specification; the first half
+covered only the key/value database aspects of hyperdb.
+
 
 # Motivation
 [motivation]: #motivation
 
-The current hypercore/Dat ecosystem currently lacks solutions two fundamental
-use cases:
+The current hypercore/Dat ecosystem currently lacks solutions for two
+fundamental use cases:
 
 - individual users should be able to modify distributed archives under their
   control from multiple devices, at a minimum to prevent loss of control of
@@ -51,35 +54,133 @@ Solutions to these two use cases are seen as essential for many current and
 future Dat ecosystem applications.
 
 
-# Semantics and Usage
+# Concepts, Behavior, and Usage
 [usage-documentation]: #usage-documentation
 
-TODO: semantics, terminology
+The multi-writer features of hyperdb are implemented by storing and replicating
+the contributions of each writer in a separate hypercore feed. This
+specification concerns itself with the details of how changes from multiple
+feeds (which may be written and replicated concurrently or asynchronously) are
+securely combined to present a unified key/value interface.
 
-TODO: things left to application developers (secure key distribution, non-trivial merge resolution)
+The following related concerns are explicitly left to application developers to
+design and implement:
 
-TODO: brief note on scaling properties (eg, reasonable numbers of feeds per database)
+- secure key distribution and authentication (eg, if a friend should be given
+  write access to a hyperdb database, how is that friend's feed key found and
+  verified?)
+- merge conflict resolution, potentially using application-layer semantics
+
+Before we go any further, a few definitions:
+
+*Feed*: A hypercore feed: an append-only log of *Entries*, which can be
+arbitrary data blobs. Hyperdb is built on top of several Feeds.
+
+*Writer*: a user (or user controlled device or software agent) that has a
+distinct feed with a public/private key pair, and thus the ability to append
+hypercore entries and "write" changes to their version of the database.
+
+*Original Writer*: the writer who created a given hyperdb database in the form
+of the *Original Feed*. The public key of the original feed is the one used to
+reference the database as a collection of feeds (eg, for the purpose of
+discovery).
+
+At a high level, multi-writer hyperdb works by having existing authorized
+writers (starting with the original writer) include authorization of new
+writers by appending metadata to their own feed which points to the new feeds
+(by public key). Each entry in each writer's feed contains "clock" metadata
+that records the known state of the entire database (all writers) seen from the
+perspective of that writer at the time they created the entry, in the form of
+"clock" version pointers. This metadata (a "[vector clock][vc]") can be used by
+other writers to resolve (or at least identify) conflicting content in the
+database. The technical term for this type of system is a "Conflict-free
+replicated data type" ([CRDT][crdt]).
+
+[vc]: https://en.wikipedia.org/wiki/Vector_clock
+[crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type
+
+
+## API
+[api]: #api
+
+The `db.get(key)` method described in the [hyperdb DEP][dep-hyperdb] actually
+returns an array of values. If it is unambiguous what the consistent value is,
+the array will have only that one value. If there is a conflict, multiple
+values will be returned. If multiple values are returned, the writer should
+attempt to merge the values (or chose one over the other) and write the result
+to the database with `db.put(key, value)`.
+
+`db.authorize(key)` will write metadata to the local feed authorizing the new
+feed (corresponding to `key`) to be included in the database.
+
+<!-- TODO: update link -->
+[dep-hyperdb]: https://github.com/bnewbold/dat-deps/blob/dep-hyperdb/proposals/0000-hyperdb.md
+
+
+## Scaling
+[scaling]: #scaling
+
+TODO: brief note on scaling properties (eg, reasonable numbers of writers per
+database)
 
 
 # Implementation
 [reference-documentation]: #reference-documentation
 
-The protobuf schema fields of interest for multi-writer (from the "Node"
-message type specified in the HyperDB DEP) are:
+The complete protobuf schemas for the hyperdb "Entry" and "InflatedEntry"
+message types (as specified in the hyperdb DEP) are:
 
-- `seq`: the sequence number of this entry in the owner's hypercore. 0 is the
-  first, 1 the second, and so forth.
-- `feed`: the ID of the hypercore writer that wrote this
-- `clock`: vector clock to determine node insertion causality
+
+```
+message Entry {
+  required string key = 1;
+  optional bytes value = 2;
+  required bytes trie = 3;
+  repeated uint64 clock = 4;
+  optional uint64 inflate = 5;
+}
+
+message InflatedEntry {
+  message Feed {
+    required bytes key = 1;
+  }
+
+  required string key = 1;
+  optional bytes value = 2;
+  required bytes trie = 3;
+  repeated uint64 clock = 4;
+  optional uint64 inflate = 5;
+  repeated Feed feeds = 6;
+  optional bytes contentFeed = 7;
+}
+```
+
+The fields of interest for multi-writer are:
+
+- `clock`: a "vector clock" to record observed state at the time of writing the
+  entry. Included in every Entry and InflatedEntry.
+- `inflate`: a back-pointer to the entry index of the most recent InflatedEntry
+  (containing a feed metadata change). Included in every Entry and
+  InflatedEntry.
+- `feeds`: list of public keys for each writer's feed. Only included in
+  InflatedEntry, and only when feeds have changed.
+
+When serialized on disk in a SLEEP directory, the original feed is written
+under `./source/`. If the "local" feed is different from the original feed, it
+is written to `./local/`. All other feeds are written under directories
+prefixed `./peers/<feed-discovery-key>/`.
+
+TODO: the above disk format is incorrect?
 
 ## Directed acyclic graph
+[dag]: #dag
 
-The combination of all operations performed on a HyperDB by all of its members
+The combination of all operations performed on a hyperdb by all of its members
 forms a DAG (*directed acyclic graph*). Each write to the database (setting a
 key to a value) includes information to point backward at all of the known
 "heads" in the graph.
 
-To illustrate what this means, let's say Alice starts a new HyperDB and writes 2
+To illustrate what this means, let's say Alice starts a new hyperdb and writes 2
 values to it:
 
 ```
@@ -97,7 +198,7 @@ Alice:  0  <---  1
 Where sequence number 1 (the second entry) refers to sequence number 0 on the
 same feed (Alice's).
 
-Now Alice *authorizes* Bob to write to the HyperDB. Internally, this means Alice
+Now Alice *authorizes* Bob to write to the hyperdb. Internally, this means Alice
 writes a special message to her feed saying that Bob's feed (identified by his
 public key) should be read and replicated in by other participants. Her feed
 becomes
@@ -218,7 +319,11 @@ TODO:
 # Drawbacks
 [drawbacks]: #drawbacks
 
-TODO: Why should we *not* do this?
+Significant increase in implementation, application, and user experience
+complexity.
+
+Two hard problems (merges and secure key distribution) are left to application
+developers.
 
 
 # Rationale and alternatives
@@ -234,11 +339,14 @@ TODO:
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-TODO:
+What is the technical term for the specific CRDT we are using?
+"Operation-based"?
 
-- What parts of the design do you expect to resolve through the DEP consensus process before this gets merged?
-- What parts of the design do you expect to resolve through implementation and code review, or are left to independent library or application developers?
-- What related issues do you consider out of scope for this DEP that could be addressed in the future independently of the solution that comes out of this DEP?
+If there are conflicts resulting in ambiguity of whether a key has been deleted
+or has a new value, does `db.get(key)` return an array of `[new_value, None]`?
+
+What is a reasonable large number of writers to have in a single database?
+Write "Scaling" section.
 
 
 # Changelog
