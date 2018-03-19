@@ -604,13 +604,14 @@ Further logistical details are left to the forthcoming Multi-Writer DEP.
 
 Need to think through deletion process with respect to listing a path prefix;
 will previously deleted nodes be occulded, or potentially show up in list
-results?
+results? Should be resolved before Draft.
 
 Can the deletion process (currently leaving "tombstone" entries in the `trie`
 forever) be improved, such that these entries don't need to be iterated over?
 mafintosh mentioned this might be in the works. Does this DEP need to "leave
 room" for those changes, or should we call out the potential for future change?
-(Probably not, should only describe existing solutions)
+Probably not, should only describe existing solutions. This can be resolved
+after Draft.
 
 There are implied "reasonable" limits on the size (in bytes) of both keys and
 values, but they are not formally specified. Protobuf messages have a hard
