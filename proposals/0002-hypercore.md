@@ -62,7 +62,7 @@ A sample flat tree spanning 4 blocks of data looks like this:
       
 The even numbered entries represent data blocks (leaf nodes) and odd numbered entries represent parent nodes that have two children.
 
-The depth of an tree node can be calculated by counting the number of trailing 1s a node has in binary notation.
+The depth of a tree node can be calculated by counting the number of trailing 1s a node has in binary notation.
 
 ```
 5 in binary = 101 (one trailing 1)
