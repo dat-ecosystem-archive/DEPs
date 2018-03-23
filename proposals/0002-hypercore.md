@@ -321,7 +321,7 @@ IPFS is designed for immutable hash-addressed content, but it provides a mechani
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- Is there a potential "branch resolution" protocol which could remove the [linear history requirement](#linear-history-requirement) and therefore enable users to share private keys freely between their devices? Explaining the risks of branches to users is difficult. (This is being explored.)
+- Is there a potential "branch resolution" protocol which could remove the [linear history requirement](#the-linear-history-requirement) and therefore enable users to share private keys freely between their devices? Explaining the risks of branches to users is difficult. (This is being explored.)
 
 
 # Changelog
