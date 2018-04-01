@@ -12,8 +12,8 @@ Github PR: (add HTTPS link here after PR is opened)
 Authors: Paul Frazee
 
 
-# Summary [summary]:
-#summary
+# Summary
+[summary]: #summary
 
 An HTTP API for adding and removing Dat data.
 
@@ -128,7 +128,7 @@ user|true|null
 
 Sever generates a session and session token, and responds 200 with a JSON body:
 
-```json
+```
 {
   sessionToken: String, users session token
 }
@@ -138,7 +138,7 @@ Sever generates a session and session token, and responds 200 with a JSON body:
 
 User POSTS to `/login` with body:
 
-```json
+```
 {
   username: String
   password: String
@@ -147,7 +147,7 @@ User POSTS to `/login` with body:
 
 Sever generates a session and session token, and responds 200 with a JSON body:
 
-```json
+```
 {
   sessionToken: String, users session token
 }
@@ -186,7 +186,7 @@ session token from the service. This token should be included in the
 All error responses should respond with a JSON body which matches the
 following schema:
 
-```json
+```
 {
   message: String
 }
