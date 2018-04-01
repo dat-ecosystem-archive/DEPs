@@ -7,7 +7,7 @@ Type: Standard
 
 Status: Draft (as of 2018-03-31)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: https://github.com/datprotocol/DEPs/pull/19
 
 Authors: Paul Frazee
 
