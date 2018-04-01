@@ -84,7 +84,8 @@ TODO- specify each route in detail.
 
 Full documentation for this API should be made available at https://user-accounts-api.com.
 
-## User registration flow [user-registration-flow]: #user-registration-flow
+## User registration flow
+[user-registration-flow]: #user-registration-flow
 
 ### Step 1. Register
 
@@ -134,7 +135,8 @@ Sever generates a session and session token, and responds 200 with a JSON body:
 }
 ```
 
-## Session login flow [session-login-flow]: #session-login-flow
+## Session login flow
+[session-login-flow]: #session-login-flow
 
 User POSTS to `/login` with body:
 
