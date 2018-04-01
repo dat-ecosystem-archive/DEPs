@@ -12,12 +12,14 @@ Github PR: (add HTTPS link here after PR is opened)
 Authors: Paul Frazee
 
 
-# Summary [summary]: #summary
+# Summary [summary]:
+#summary
 
 An HTTP API for adding and removing Dat data.
 
 
-# Motivation [motivation]: #motivation
+# Motivation
+[motivation]: #motivation
 
 Users frequently make use of "pinning services" to keep their Dat data online
 independently of their personal devices. By specifying a standard API for
@@ -30,7 +32,8 @@ dat publish --name myarchive my-pinning-service.com
 ```
 
 
-# Service description (PSA) document [service-description]: #service-description
+# Service description (PSA) document
+[service-description]: #service-description
 
 Servers should host the PSA service-description document at `/.well-known/psa`.
 It may be fetched using a GET request. This document will fit the following schema:
@@ -63,7 +66,8 @@ with the final URLs for their specifications.) If either API is absent from
 the PSA document, the service will be rejected.
 
 
-# User accounts API [user-accounts-api]: #user-accounts-api
+# User accounts API
+[user-accounts-api]: #user-accounts-api
 
 The user-accounts API should provide the following resources:
 
@@ -86,7 +90,7 @@ Full documentation for this API should be made available at https://user-account
 
 User POSTS to `/register` with body:
 
-```json
+```
 {
   email: String
   username: String
@@ -150,7 +154,8 @@ Sever generates a session and session token, and responds 200 with a JSON body:
 ```
 
 
-# Dat pinning API [dat-pinning-api]: #dat-pinning-api
+# Dat pinning API
+[dat-pinning-api]: #dat-pinning-api
 
 The dat pinning API should provide the following resources:
 
@@ -167,14 +172,16 @@ POST /item/:key   Update information about a Dat in the account's list of pins.
 TODO- specify each route in detail.
 
 
-# Authentication [authentication]: #authentication
+# Authentication
+[authentication]: #authentication
 
 Clients should use the [User accounts API](#user-accounts-api) to fetch a
 session token from the service. This token should be included in the
 `Authentication` header using the `Bearer` scheme.
 
 
-# Error responses [error-responses]: #error-responses
+# Error responses
+[error-responses]: #error-responses
 
 All error responses should respond with a JSON body which matches the
 following schema:
@@ -190,7 +197,8 @@ error and, if appropriate, give steps for solving the issue. Other fields may
 be included in the response.
 
 
-# Rationale and alternatives [alternatives]: #alternatives
+# Rationale and alternatives
+[alternatives]: #alternatives
 
 - The motivations and drawbacks of the PSA Service Document are discussed
 [here](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol#motivation).
@@ -199,7 +207,8 @@ authentication. We would probably need to use the HTTP Basic scheme and remove
 any mechanisms for registering new accounts.
 
 
-# Changelog [changelog]: #changelog
+# Changelog
+[changelog]: #changelog
 
 - YYYY-MM-DD: First complete draft submitted for review
 
