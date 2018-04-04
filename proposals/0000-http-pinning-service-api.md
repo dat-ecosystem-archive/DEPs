@@ -72,73 +72,19 @@ the PSA document, the service will be rejected.
 The user-accounts API should provide the following resources:
 
 ```
-POST /register  Register a new account.
-POST /verify    Verify the email address of a recently-registered account.
 POST /login     Create a new session with an existing account.
 POST /logout    End a session.
 GET  /account   Get information about the account attached to the current session.
-POST /account   Update information about the account attached to the current session.
 ```
-
-TODO- specify each route in detail.
 
 Full documentation for this API should be made available at https://user-accounts-api.com.
 
-## User registration flow
-[user-registration-flow]: #user-registration-flow
+## POST /login
+[user-accounts-api-post-login]: #user-accounts-api-post-login
 
-### Step 1. Register
+Create a new session with an existing account.
 
-User POSTS to `/register` with body:
-
-```
-{
-  email: String
-  username: String
-  password: String
-}
-```
-
-Server creates a new account for the user. A random 32-byte email-verification
-nonce is created. The user record indicates:
-
-scopes|isEmailVerified|emailVerifyNonce
-------|---------------|----------------
-none|false|XXX
-
-Server sends an email to the user with the `emailVerifyNonce`. 
-
-Server responds 200 or 204.
-
-### Step 2. Verify (POST /verify)
-
-User POSTS `/v1/verify` with JSON body:
-
-```
-{
-  username: String, username of the account
-  nonce: String, verification nonce
-}
-```
-
-Server updates user record to indicate:
-
-scopes|isEmailVerified|emailVerifyNonce
-------|---------------|----------------
-user|true|null
-
-Sever generates a session and session token, and responds 200 with a JSON body:
-
-```
-{
-  sessionToken: String, users session token
-}
-```
-
-## Session login flow
-[session-login-flow]: #session-login-flow
-
-User POSTS to `/login` with body:
+Request body (JSON). All fields required:
 
 ```
 {
@@ -147,11 +93,39 @@ User POSTS to `/login` with body:
 }
 ```
 
-Sever generates a session and session token, and responds 200 with a JSON body:
+Handler should generate a session and return the identifier in the response.
+Response body (JSON):
 
 ```
 {
-  sessionToken: String, users session token
+  sessionToken: String
+}
+```
+
+## POST /logout
+[user-accounts-api-post-logout]: #user-accounts-api-post-logout
+
+End a session.
+
+Request should include [authentication header](#authentication).
+
+## GET /account
+[user-accounts-api-get-account]: #user-accounts-api-get-account
+
+Get information about the account attached to the current session.
+
+Request should include [authentication header](#authentication).
+
+Response body (JSON):
+
+```
+{
+  email: String, the accounts email (required)
+  username: String, the accounts username (required)
+  diskUsage: Number, how much disk space has the user's data taken? (optional)
+  diskQuota: Number, how much disk space can the user's data take? (optional)
+  updatedAt: Number, the Unix timestamp of the last time the user account was updated (optional)
+  createdAt: Number, the Unix timestamp of the last time the user account was updated (optional)
 }
 ```
 
@@ -166,12 +140,92 @@ GET  /            List all Dat data pinned by this account.
 POST /add         Add a Dat to this account's list of pins.
 POST /remove      Remove a Dat from this account's list of pins.
 GET  /item/:key   Get information about a Dat in the account's list of pins.
-                  Key may be the pubkey or name of the dat.
 POST /item/:key   Update information about a Dat in the account's list of pins.
-                  Key may be the pubkey or name of the dat.
 ```
 
-TODO- specify each route in detail.
+## GET /
+[dat-pinning-api-get-root]: #dat-pinning-api-get-root
+
+List all Dat data pinned by this account.
+
+Request should include [authentication header](#authentication).
+
+Response body (JSON):
+
+```
+{
+  items: [{
+    url: String, dat url
+    name: String, optional shortname assigned by the user
+    title: String, optional title extracted from the dat's manifest file
+    description: String, optional description extracted from the dat's manifest file
+    urls: Array of Strings, optional list of URLs the dat can be accessed at
+  }]
+}
+```
+
+## POST /add
+[dat-pinning-api-post-add]: #dat-pinning-api-post-add
+
+Add a Dat to this account's list of pins.
+
+Request should include [authentication header](#authentication).
+Request body (JSON):
+
+```
+{
+  url: String, required url/key of the dat
+  name: String, optional shortname for the archive
+  domains: Array of Strings, optional list of domain-names the dat should be made available at
+}
+```
+
+## POST /remove
+[dat-pinning-api-post-remove]: #dat-pinning-api-post-remove
+
+Remove a Dat from this account's list of pins.
+
+Request should include [authentication header](#authentication).
+Request body (JSON):
+
+```
+{
+  url: String, required url/key of the dat
+}
+```
+
+## GET /item/:key
+[dat-pinning-api-get-item]: #dat-pinning-api-get-item
+
+Get information about a Dat in the account's list of pins. Key must be the
+pubkey of the dat.
+
+Response body (JSON):
+
+```
+{
+  url: String, dat url
+  name: String, optional shortname assigned by the user
+  title: String, optional title extracted from the dat's manifest file
+  description: String, optional description extracted from the dat's manifest file
+  urls: Array of Strings, optional list of URLs the dat can be accessed at
+}
+```
+
+## POST /item/:key
+[dat-pinning-api-post-item]: #dat-pinning-api-post-item
+
+Update information about a Dat in the account's list of pins. Key must be the
+pubkey of the dat.
+
+Request body (JSON):
+
+```
+{
+  name: String, optional shortname for the archive
+  domains: Array of Strings, optional list of domain-names the dat should be made available at
+}
+```
 
 
 # Authentication
@@ -207,6 +261,12 @@ be included in the response.
 Without a description format, it becomes difficult to handle user
 authentication. We would probably need to use the HTTP Basic scheme and remove
 any mechanisms for registering new accounts.
+
+
+# Unresolved questions
+[unresolved]: #unresolved-questions
+
+- Does the registration flow need to be included in the spec?
 
 
 # Changelog
