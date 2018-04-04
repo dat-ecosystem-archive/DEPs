@@ -138,7 +138,7 @@ message DriveEvent {
     }
 
     optional Stat stat = 1;
-    optional uint63 timestamp = 2;
+    optional uint64 timestamp = 2;
 }
 ```
 
