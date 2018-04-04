@@ -44,11 +44,11 @@ It may be fetched using a GET request. This document will fit the following sche
   "title": "My Pinning Service",
   "description": "Keep your Dats online!",
   "links": [{
-    "rel": "user-accounts-api.com/v1",
+    "rel": "https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-account-api",
     "title": "User accounts API",
     "href": "/v1/accounts"
   }, {
-    "rel": "datprotocol.com/deps/0000-http-pinning-service-api",
+    "rel": "https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-dats-api",
     "title": "Dat pinning API",
     "href": "/v1/dats"
   }]
@@ -76,8 +76,6 @@ POST /login     Create a new session with an existing account.
 POST /logout    End a session.
 GET  /account   Get information about the account attached to the current session.
 ```
-
-Full documentation for this API should be made available at https://user-accounts-api.com.
 
 ## POST /login
 [user-accounts-api-post-login]: #user-accounts-api-post-login
