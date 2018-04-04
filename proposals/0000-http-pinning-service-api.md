@@ -129,6 +129,8 @@ Response body (JSON):
 }
 ```
 
+If `diskQuota` is not included or is set to 0, the service is acting as a "registry" and will not host the files.
+
 
 # Dat pinning API
 [dat-pinning-api]: #dat-pinning-api
