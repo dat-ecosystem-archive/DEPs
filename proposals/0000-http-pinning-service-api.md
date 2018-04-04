@@ -159,7 +159,7 @@ Response body (JSON):
     name: String, optional shortname assigned by the user
     title: String, optional title extracted from the dat's manifest file
     description: String, optional description extracted from the dat's manifest file
-    urls: Array of Strings, optional list of URLs the dat can be accessed at
+    additionalUrls: Array of Strings, optional list of URLs the dat can be accessed at
   }]
 }
 ```
@@ -208,7 +208,7 @@ Response body (JSON):
   name: String, optional shortname assigned by the user
   title: String, optional title extracted from the dat's manifest file
   description: String, optional description extracted from the dat's manifest file
-  urls: Array of Strings, optional list of URLs the dat can be accessed at
+  additionalUrls: Array of Strings, optional list of URLs the dat can be accessed at
 }
 ```
 
