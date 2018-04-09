@@ -7,7 +7,7 @@ Type: Standard
 
 Status: Draft (as of 2018-02-21)
 
-Github PR: [Draft][https://github.com/datprotocol/DEPs/pull/4]
+Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/4)
 
 Authors: [Paul Frazee](https://github.com/pfrazee), [Mathias Buus](https://github.com/mafintosh)
 
