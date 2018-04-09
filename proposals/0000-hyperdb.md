@@ -130,11 +130,11 @@ An example pseudo-code session working with a database might be:
 [reference-documentation]: #reference-documentation
 
 A hyperdb hypercore feed typically consists of a sequence of protobuf-encoded
-messages of either "Entry" or "InflatedEntry" type. Higher-level protocols may
-make exception to this, for example by prepending an application-specific
-metadata message as the first entry in the feed. There is sometimes a second
-"content" feed associated with the primary hyperdb key/value feed, to store
-data that does not fit in the (limited) `value` size constraint.
+messages of "Entry" type. Higher-level protocols may make exception to this,
+for example by prepending an application-specific metadata message as the first
+entry in the feed. There is sometimes a second "content" feed associated with
+the primary hyperdb key/value feed, to store data that does not fit in the
+(limited) `value` size constraint.
 
 The sequence of entries includes an incremental index: the most recent entry in
 the feed contains metadata pointers that can be followed to efficiently look up
@@ -142,17 +142,9 @@ any key in the database without needing to linear scan the entire history or
 generate an independent index data structure. Implementations are, of course,
 free to maintain their own index if they prefer.
 
-The Entry and InflatedEntry protobuf message schemas are:
+The Entry protobuf message schema is:
 
     message Entry {
-      required string key = 1;
-      optional bytes value = 2;
-      required bytes trie = 3;
-      repeated uint64 clock = 4;
-      optional uint64 inflate = 5;
-    }
-    
-    message InflatedEntry {
       message Feed {
         required bytes key = 1;
       }
@@ -179,10 +171,9 @@ types are:
   used for navigating the tree of keys.
 - `clock`: reserved for use in the forthcoming `multi-writer` standard An empty
   list is the safe (and expected) value for `clock` in single-writer use cases.
-- `inflate`: TODO(mafintosh)
-
-The fields specific to InflatedEntry are:
-
+- `inflate`: a "pointer" (reference to a feed index number) to the most recent
+  entry in the feed that has the optional `feeds` and `contentFeed` fields set.
+  Not defined if `feeds` and `contentFeed` are defined.
 - `feeds`: reserved for use with `multi-writer`. The safe single-writer value is
   to use the current feed's hypercore public key.
 - `contentFeed`: for applications which require a parallel "content" hypercore
@@ -190,10 +181,14 @@ The fields specific to InflatedEntry are:
   for that feed.
 
 For the case of a single-writer feed, not using multi-writer features, it is
-sufficient to write a single InflatedEntry message as the first entry in the
-hypercore feed, with `feeds` containing a single entry (a pointer to the
-current feed itself), and `contendFeed` optionally set to a pointer to a paired
-contend feed.
+sufficient to write a single Entry message as the first entry in the hypercore
+feed, with `feeds` containing a single entry (a pointer to the current feed
+itself), and `contendFeed` optionally set to a pointer to a paired contend
+feed.
+
+If *either* `feeds` *or* `contentFeed` are definined in an entry, *both* fields
+must be defined, so the new message can be refered to via `inflated`. In this
+case the entry is refered to as an "inflated entry".
 
 
 ## Path Hashing 
@@ -265,7 +260,7 @@ generated as a proof of concept. Implementions should take care to properly
 handle collisions by verifying keys and following bucket pointers (see the next
 section).
 
-<!---
+<!--
 
 Generation code (javascript) for the above:
 
@@ -295,7 +290,7 @@ Then, to manually "expand" arrays in python3:
     [path.extend(e) for e in tmp]
     path
 
---->
+-->
 
 
 ## Incremental Index Trie
@@ -306,29 +301,39 @@ can be used to look up other keys, or to list all keys with a given prefix.
 This is stored under the `trie` field of the Entry protobuf message.
 
 The trie effectively mirrors the path hash array. Each element in the `trie`
-points to the newest Entry which has an identical path up to that specific
-prefix location. Elements can be null; any trailing null elements can be left
-blank.
+is called a "bucket". Each non-empty bucket points to the newest Entries which
+have an identical path up to that specific prefix location; because the trie
+has 4 "values" at each node, there can be pointers to up to 3 other values at a
+given element in the trie array. Buckets can be empty if there are no nodes
+with path hashes that differ for the first time the given bucket (aka, there
+are no "branches" at this node in the trie). Only non-null elements will be
+transmitted or stored on disk.
 
 The data structure of the trie is a sparse array of pointers to other Entry
-entries. Each pointer indicates a feed index and an entry index pointer; for
-the non-multi-writer case, the feed index is always 0, so we consider only the
-entry index.
+entries. Each pointer indicates a feed index and an entry index pointer, and is
+associated with a 2-bit value; for the non-multi-writer case, the feed index is
+always 0, so we consider only the entry index.
+
+For a `trie` with `N` buckets, each may have zero or more pointers. Typically
+there are a maximum of 3 pointers per bucket, corresponding to the 4 possible
+values minus the current Entry's value, but in the event of hash collisions (in
+the path array space) , there may be multiple pointers in the same bucket
+corresponding to the same value.
 
 To lookup a key in the database, the recipe is to:
 
 1. Calculate the path hash array for the key you are looking for.
 2. Select the most-recent ("latest") Entry for the feed.
-3. Compare path hash arrays. If the paths match exactly, compare keys; they match,
-   you have found the you were looking for! Check whether the `value` is
+3. Compare path hash arrays. If the paths match exactly, compare keys; they
+   match, you have found the you were looking for! Check whether the `value` is
    defined or not; if not, this Entry represents that the key was deleted from
    the database.
 4. If the paths match, but not the keys, look for a pointer in the last `trie`
    array index, and iterate from step #3 with the new Entry.
 5. If the paths don't entirely match, find the first index at which the two
    arrays differ, and look up the corresponding element in this Entry's `trie`
-   array. If the element is empty, then your key does not exist in this
-   hyperdb.
+   array. If the element is empty, or doesn't have a pointer corresponding to
+   your 2-bit value, then your key does not exist in this hyperdb.
 6. If the trie element is not empty, then follow that pointer to select the
    next Entry. Recursively repeat this process from step #3; you will be
    descending the `trie` in a search, and will either terminate in the Entry you
@@ -362,14 +367,99 @@ To delete a value, follow the same procedure as adding a key, but write the
 `Entry` without a `value` (in protobuf, this is distinct from having a `value`
 field with zero bytes). Deletion nodes may persist in the database forever.
 
+
 ## Binary Trie Encoding
 [trie_encoding]: #trie_encoding
 
-TODO(mafintosh)
+The following scheme is used to encode trie data structures (sparse, indexed
+arrays of pointers to entries) into a variable-length bytestring as the `trie`
+field of an Entry protobuf message.
+
+Consider a trie array with `N` buckets and `M` non-empty buckets (`0 <= M <=
+N`). In the encoded field, there will be `M` concatanated bytestrings of the
+form:
+
+- trie index (varint), followed by...
+- bucket bitfield (packed in a varint), encoding which of the 4 values at this
+  node of the trie have pointers, followed by one or more...
+- pointer sets, each referencing an entry at (feed index, entry index):
+    - feed index (varint, with a extra "more pointers at this value" low bit,
+      encoded as `feed_index << 1 | more_bit`)
+    - entry index (varint)
+
+In the common case for a small/sparse hyperdb, there will a small number of
+non-empty buckets (small `M`), a usually a single `(feed index, entry index)`
+pointer for those non-empty buckets. For a very large/dense hyperdb (millions
+of key/value pairs), there will be many non-empty buckets (`M` approaching
+`N`), and buckets may have up to the full 4 pointer sets. Even with millions of
+entries, hash collisions will be very rare; in those cases there will be
+multiple pointers in the same pointer set.
+
+Consider an entry with path hash:
+
+```
+[ 1, 1, 0, 0, 3, 1, 2, 3, 3, 1, 1, 1, 2, 2, 1, 1, 1, 0, 2, 3, 3, 0, 1, 2, 1, 1, 2, 3, 0, 0, 2, 1,
+  0, 2, 1, 0, 1, 1, 0, 1, 0, 1, 3, 1, 0, 0, 2, 3, 0, 1, 3, 2, 0, 3, 2, 0, 1, 0, 3, 2, 0, 2, 1, 1,
+  4 ]
+```
+
+and trie:
+
+```
+[ , { val: 1, feed: 0, index: 1 } ]
+```
+
+In this case `N` is 64 (or you could count as 2 if you ignore trailing empty
+entries) and `M` is 1. There will be a single bytestring chunk:
+
+- index varint is `1` (second element in the trie array)
+- bitfield is `0b0010` (varint 2): there is only a pointer set for value 1 (the second value)
+- there is a single pointer in the pointer set, which is (`feed=0 << 1 | 0`,
+  `index=1`), or (varint 2, varint 1)
+
+Combined, the `trie` bytestring will be:
+
+```
+[0x01, 0x02, 0x02, 0x02]
+```
+
+For a more complex example, consider the same path hash, but the trie:
+
+```
+[ , { val: 1, feed: 0, index: 1; val: 2, feed: 5, index: 3; val: 3, feed: 6, index: 98 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
+  , , , , , { val: 0, feed: 0, index, 23; val: 0, feed: 1, index: 17 ]
+```
+
+Now `M` is 2. The first bytestring chunk will be:
+
+- index varint is `1` (second element in the trie array)
+- bitfield is `0b1110` (varint 9): there are three pointer sets
+- first pointer set is (`feed=0 << 1 | 0`, `index=1`) or (varint 2, varint 1)
+- second pointer set is (`feed=5 << 1 | 0`, `index=3`) or (varint 10, varint 3)
+- third pointer set is (`feed=6 << 1 | 0`, `index=98`) or (varint 12, varint 98)
+
+the second bytestring chunk would be:
+
+- index varint is `37` (38th element in the trie array)
+- btifield is `0b0001` (varint 1); there is a single pointer set... but it
+  contains a hash collision, so there are two pointers
+- first pointer is (`feed=0` << 1 | 1`, `index=23`) or (varint 1, varint=23);
+  note the `more` bit is set high!
+- second pointer is (`feed=1 << 1 | 0`, `index=17`) or (varint 2, varint 17);
+  note the `more` bit is low, as usual. In the extremely unlikely case of
+  multiple collisions there could have been more pointers with `more` high
+  preceeding this one.
+
+The overall bytestring would be:
+
+```
+[0x01, 0x09, 0x02, 0x01, 0x0A, 0x03, 0x0C, 0x62, 0x25, 0x1, 0x01, 0x17, 0x02, 0x11]
+```
 
 
 # Examples
 [examples]: #examples
+
 
 ## Simple Put and Get
 
@@ -402,7 +492,7 @@ Now we `db.put('/a/c', 'hello')` and expect a second Entry:
   value: 'hello',
   trie:
    [ , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , 
-     , , { feed: 0, index: 0 } ] }
+     , , { element: 2, feed: 0, index: 0 } ] }
 ```
 
 The path hash array for this key (index 1) is:
@@ -428,7 +518,7 @@ Next we insert a third node with `db.put('/x/y', 'other')`, and get a third Entr
 { key: 'x/y',
   value: 'other',
   trie:
-   [ , { feed: 0, index: 1 } ],
+   [ , { val: 1, feed: 0, index: 1 } ],
 ```
 
 The path hash array for this key (index 2) is:
@@ -499,8 +589,8 @@ is:
 ```
 { key: 'a/c',
   value: ,
-  trie: [ , { feed: 0, index: 2 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , 
-          , , { feed: 0, index: 0 } ] }
+  trie: [ , { val: 1, feed: 0, index: 2 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , 
+          , , { val: 1, feed: 0, index: 0 } ] }
 ```
 
 The path hash array for this Entry (key) is:
@@ -510,7 +600,6 @@ The path hash array for this Entry (key) is:
   0, 1, 1, 0, 1, 2, 3, 2, 2, 2, 0, 0, 3, 1, 2, 1, 3, 3, 3, 3, 3, 3, 0, 3, 3, 2, 3, 2, 3, 0, 1, 0,
   4 ]
 ```
-
 
 
 # Drawbacks
@@ -547,8 +636,6 @@ For a database with most keys having N path segments, the cost of a `get()`
 scales with the number of entries M as `O(log(M))` with best case 1 lookup and
 worst case `4 * 32 * N = 128 * N` lookups (for a saturated `trie`).
 
-TODO: prove or verify the above `O(log(M))` intuition
-
 The cost of a `put()` or `delete()` is proportional to the cost of a `get()`.
 
 The cost of a `list()` is linear (`O(M)`) in the number of matching entries,
@@ -556,6 +643,26 @@ plus the cost of a single `get()`.
 
 The total metadata overhead for a database with M entries scales with `O(M
 * log(M))`.
+
+
+# Privacy and Security Considerations
+[privacy]: #privacy
+
+The basic key/value semantics of hyperdb (as discussed in this DEP, not
+considering multi-writer changes) are not known to introduce new privacy issues
+when compared with, eg, storing binary values at key-like paths using the
+current ("legacy") hyperdrive system.
+
+A malicious writer could cause trouble for readers, even readers who do not
+trust the application-level contents of a feed. Implementions which may be
+exposed to arbitrary feeds from unknown sources on the internet should take
+care to the following scenarios: A malicious writer may be able to produce very
+frequent key path hash collisions, which could degrade to linear performance. A
+malicious writer could send broken trie structures that contain pointer loops,
+duplicate pointers, or other invalid contents. A malicous writer could write
+arbitrary data in value fields in an attempt to exploit de-serialization bugs.
+A malicious writer could leverage non-printing unicode characters to create
+database entries with user-indistinguishable names (keys).
 
 
 # Rationale and alternatives
@@ -602,9 +709,13 @@ Further logistical details are left to the forthcoming Multi-Writer DEP.
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
+Should we declare that `contendFeed` pointers *not* change over the history of
+a feed? See also <https://github.com/datprotocol/DEPs/issues/13>
+
 Need to think through deletion process with respect to listing a path prefix;
 will previously deleted nodes be occulded, or potentially show up in list
-results? Should be resolved before Draft.
+results? Should be reviewed (by a non-author of this document) before accepted
+as a Draft.
 
 Can the deletion process (currently leaving "tombstone" entries in the `trie`
 forever) be improved, such that these entries don't need to be iterated over?
@@ -612,6 +723,9 @@ mafintosh mentioned this might be in the works. Does this DEP need to "leave
 room" for those changes, or should we call out the potential for future change?
 Probably not, should only describe existing solutions. This can be resolved
 after Draft.
+
+Review (or prove?) the `O(log(M))` intuition for `get()` operations. This could
+happen after Draft status.
 
 There are implied "reasonable" limits on the size (in bytes) of both keys and
 values, but they are not formally specified. Protobuf messages have a hard
@@ -621,7 +735,7 @@ specific limits on key and value sizes? Would be good to decide before Draft
 status.
 
 Apart from leaving fields in the protobuf message specification, multi-writer
-concerns are out of scope for this DEP.
+concerns are explicitly out of scope for this DEP.
 
 
 # Changelog
