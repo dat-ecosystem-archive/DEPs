@@ -118,8 +118,8 @@ Response body (JSON):
 
 ```
 {
-  email: String, the accounts email (required)
   username: String, the accounts username (required)
+  email: String, the accounts email (optional)
   diskUsage: Number, how much disk space has the user's data taken? (optional)
   diskQuota: Number, how much disk space can the user's data take? (optional)
   updatedAt: Number, the Unix timestamp of the last time the user account was updated (optional)
