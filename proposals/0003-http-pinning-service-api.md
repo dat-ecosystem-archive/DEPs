@@ -60,7 +60,8 @@ Protocol](http://web.archive.org/web/20180418164539/https://github.com/beakerbro
 
 The PSA document must provide links to two API resources: the User Accounts
 API, and the Dat Pinning API. These resources should be indicated by the
-`user-accounts-api.com/v1` and `datprotocol.com/deps/0000-http-pinning-service-api`
+`https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-account-api`
+and `https://archive.org/services/purl/purl/datprotocol/spec/pinning-service-dats-api`
 rel-types, respectively. (These rel-types will need to be updated
 with the final URLs for their specifications.) If either API is absent from
 the PSA document, the service will be rejected.
