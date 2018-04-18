@@ -56,7 +56,7 @@ It may be fetched using a GET request. This document will fit the following sche
 ```
 
 You can read more about the [PSA Service Discovery
-Protocol](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol).
+Protocol](http://web.archive.org/web/20180418164539/https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol).
 
 The PSA document must provide links to two API resources: the User Accounts
 API, and the Dat Pinning API. These resources should be indicated by the
@@ -257,7 +257,7 @@ be included in the response.
 [alternatives]: #alternatives
 
 - The motivations and drawbacks of the PSA Service Document are discussed
-[here](https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol#motivation).
+[here](http://web.archive.org/web/20180418164539/https://github.com/beakerbrowser/beaker/wiki/PSA-Web-Service-Discovery-Protocol#motivation).
 Without a description format, it becomes difficult to handle user
 authentication. We would probably need to use the HTTP Basic scheme and remove
 any mechanisms for registering new accounts.
