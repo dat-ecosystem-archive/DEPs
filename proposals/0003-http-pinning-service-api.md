@@ -1,13 +1,13 @@
 
-Title: **DEP-0000: HTTP Pinning Service API**
+Title: **DEP-0003: HTTP Pinning Service API**
 
-Short Name: `0000-http-pinning-service-api`
+Short Name: `0003-http-pinning-service-api`
 
 Type: Standard
 
-Status: Draft (as of 2018-03-31)
+Status: Draft (as of 2018-04-18)
 
-Github PR: https://github.com/datprotocol/DEPs/pull/19
+Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/19)
 
 Authors: Paul Frazee
 
@@ -272,5 +272,6 @@ any mechanisms for registering new accounts.
 # Changelog
 [changelog]: #changelog
 
-- YYYY-MM-DD: First complete draft submitted for review
+ - 2018-03-31: First full draft of DEP-0003 submitted for review.
+ - 2018-04-18: DEP-0003 accepted as "Draft"
 
