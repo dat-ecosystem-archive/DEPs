@@ -386,8 +386,9 @@ N`). In the encoded field, there will be `M` concatanated bytestrings of the
 form:
 
 - trie index (varint), followed by...
-- bucket bitfield (packed in a varint), encoding which of the 4 values at this
-  node of the trie have pointers, followed by one or more...
+- bucket bitfield (packed in a varint), encoding which of the 5 values (4
+  values if the index is not modulo 32) at this node of the trie have pointers,
+  followed by one or more...
 - pointer sets, each referencing an entry at (feed index, entry index):
     - feed index (varint, with a extra "more pointers at this value" low bit,
       encoded as `feed_index << 1 | more_bit`)
@@ -433,21 +434,22 @@ For a more complex example, consider the same path hash, but the trie:
 
 ```
 [ , { val: 1, feed: 0, index: 1; val: 2, feed: 5, index: 3; val: 3, feed: 6, index: 98 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
-  , , , , , { val: 0, feed: 0, index, 23; val: 0, feed: 1, index: 17 ]
+  , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
+  { val: 4, feed: 0, index, 23; val: 4, feed: 1, index: 17 ]
 ```
 
 Now `M` is 2. The first bytestring chunk will be:
 
 - index varint is `1` (second element in the trie array)
-- bitfield is `0b1110` (varint 9): there are three pointer sets
+- bitfield is `0b01110` (varint 9): there are three pointer sets
 - first pointer set is (`feed=0 << 1 | 0`, `index=1`) or (varint 2, varint 1)
 - second pointer set is (`feed=5 << 1 | 0`, `index=3`) or (varint 10, varint 3)
 - third pointer set is (`feed=6 << 1 | 0`, `index=98`) or (varint 12, varint 98)
 
 the second bytestring chunk would be:
 
-- index varint is `37` (38th element in the trie array)
-- btifield is `0b0001` (varint 1); there is a single pointer set... but it
+- index varint is `64` (65th element in the trie array; the terminating value)
+- btifield is `0b10000` (varint 1); there is a single pointer set... but it
   contains a hash collision, so there are two pointers
 - first pointer is (`feed=0` << 1 | 1`, `index=23`) or (varint 1, varint=23);
   note the `more` bit is set high!
@@ -459,7 +461,7 @@ the second bytestring chunk would be:
 The overall bytestring would be:
 
 ```
-[0x01, 0x09, 0x02, 0x01, 0x0A, 0x03, 0x0C, 0x62, 0x25, 0x1, 0x01, 0x17, 0x02, 0x11]
+[0x01, 0x09, 0x02, 0x01, 0x0A, 0x03, 0x0C, 0x62, 0x40, 0x10, 0x01, 0x17, 0x02, 0x11]
 ```
 
 
