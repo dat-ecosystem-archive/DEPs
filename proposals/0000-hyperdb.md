@@ -260,6 +260,12 @@ generated as a proof of concept. Implementions should take care to properly
 handle collisions by verifying keys and following bucket pointers (see the next
 section).
 
+An example hash collision (useful for testing; thanks to Github user
+`dcposch`):
+
+    /mpomeiehc
+    /idgcmnmna
+
 <!--
 
 Generation code (javascript) for the above:
