@@ -108,7 +108,8 @@ key is an error. Requires read-write access.
 the database under the given prefix. Prefixes operate on a path-segment basis:
 `/ab` is not a valid prefix for key `/abcd`, but is valid for `/ab/cd`. If the
 prefix does not exist, returns an empty list. The order of returned keys is
-implementation (or configuration) specific. Read-only.
+implementation (or configuration) specific. Default listing is recursive
+(implementations may have a flag to control this behavior).  Read-only.
 
 If the hypercore underlying a hyperdb is only partially replicated, behavior is
 implementation-specific. For example, a `get()` call could block until the
