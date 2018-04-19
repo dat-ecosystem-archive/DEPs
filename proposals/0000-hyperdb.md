@@ -20,7 +20,7 @@ Authors:
 
 Hyperdb is an abstraction layer providing a general purpose distributed
 key/value store over the hypercore protocol. It is an iteration on the
-hyperdrive directory tree implementation, building top of the hypercore
+hyperdrive directory tree implementation, building on top of the hypercore
 append-only log abstraction layer. Keys are path-like strings (eg,
 `/food/fruit/kiwi`), and values are arbitrary binary blobs (generally under a
 megabyte).
@@ -99,9 +99,9 @@ or the "latest" revision.
 Requires read-write access.  Returns an error (eg, via callback) if there was a
 problem.
 
-`db.get(key)`: Reading a non-existant `key` is an error. Read-only.
+`db.get(key)`: Reading a non-existent `key` is an error. Read-only.
 
-`db.delete(key)`: Removes the key from the database. Deleting a non-existant
+`db.delete(key)`: Removes the key from the database. Deleting a non-existent
 key is an error. Requires read-write access.
 
 `db.list(prefix)`: returns a flat (not nested) list of all keys currently in
@@ -163,14 +163,15 @@ own DEP and mentioned only partially here. The fields common to both message
 types are:
 
 - `key`: UTF-8 key that this node describes. Leading and trailing forward
-  slashes (`/`) are always striped before storing in protobuf.
-- `value`: arbitrary byte array. A non-existant `value` entry indicates that
+  slashes (`/`) are always stripped before storing in protobuf.
+- `value`: arbitrary byte array. A non-existent `value` entry indicates that
   this Entry indicates a deletion of the key; this is distinct from specifying
   an empty (zero-length) value.
 - `trie`: a structured array of pointers to other Entry entries in the feed,
   used for navigating the tree of keys.
-- `clock`: reserved for use in the forthcoming `multi-writer` standard An empty
-  list is the safe (and expected) value for `clock` in single-writer use cases.
+- `clock`: reserved for use in the forthcoming `multi-writer` standard. An
+  empty list is the safe (and expected) value for `clock` in single-writer use
+  cases.
 - `inflate`: a "pointer" (reference to a feed index number) to the most recent
   entry in the feed that has the optional `feeds` and `contentFeed` fields set.
   Not defined if `feeds` and `contentFeed` are defined.
@@ -218,7 +219,7 @@ case we use all zeros.
 When converting the 8-bytehash to an array of 2-bit bytes, the ordering is
 proceed byte-by-byte, and for each take the two lowest-value bits (aka, `hash &
 0x3`) as byte index `0`, the next two bits (aka, `hash & 0xC`) as byte index
-`1`, etc. When concatanating path hashes into a longer array, the first
+`1`, etc. When concatenating path hashes into a longer array, the first
 ("left-most") path element hash will correspond to byte indexes 0 through 31;
 the terminator (`4`) will have the highest byte index.
 
@@ -323,7 +324,7 @@ always 0, so we consider only the entry index.
 For a `trie` with `N` buckets, each may have zero or more pointers. Typically
 there are a maximum of 3 pointers per bucket, corresponding to the 4 possible
 values minus the current Entry's value, but in the event of hash collisions (in
-the path array space) , there may be multiple pointers in the same bucket
+the path array space), there may be multiple pointers in the same bucket
 corresponding to the same value.
 
 To lookup a key in the database, the recipe is to:
@@ -359,7 +360,7 @@ Similarly, to write a key to the database:
    a pointer to the Entry with the same hash at the final array index.
 5. If the paths don't entirely match, find the first index at which the two
    arrays differ. Copy all `trie` elements (empty or not) into the new `trie`
-   for indicies between the "current index" and the "differing index".
+   for indices between the "current index" and the "differing index".
 6. Next look up the corresponding element in this Entry's `trie` array at the
    differing index. If this element is empty, then you have found the most
    similar Entry. Write a pointer to this node to the `trie` at
@@ -382,7 +383,7 @@ arrays of pointers to entries) into a variable-length bytestring as the `trie`
 field of an Entry protobuf message.
 
 Consider a trie array with `N` buckets and `M` non-empty buckets (`0 <= M <=
-N`). In the encoded field, there will be `M` concatanated bytestrings of the
+N`). In the encoded field, there will be `M` concatenated bytestrings of the
 form:
 
 - trie index (varint), followed by...
@@ -449,9 +450,9 @@ Now `M` is 2. The first bytestring chunk will be:
 the second bytestring chunk would be:
 
 - index varint is `64` (65th element in the trie array; the terminating value)
-- btifield is `0b10000` (varint 1); there is a single pointer set... but it
+- bitfield is `0b10000` (varint 1); there is a single pointer set... but it
   contains a hash collision, so there are two pointers
-- first pointer is (`feed=0` << 1 | 1`, `index=23`) or (varint 1, varint=23);
+- first pointer is (`feed=0 << 1 | 1`, `index=23`) or (varint 1, varint=23);
   note the `more` bit is set high!
 - second pointer is (`feed=1 << 1 | 0`, `index=17`) or (varint 2, varint 17);
   note the `more` bit is low, as usual. In the extremely unlikely case of
@@ -547,7 +548,7 @@ pointer to entry index 1, so we fetch that Entry and recurse. Comparing path
 hash arrays, we now get all the way to index 34 before there is a difference.
 We again look in the `trie`, find a pointer to entry index 0, and fetch the
 first Entry and recurse. Now the path elements match exactly; we have found the
-Entry we are looking for, and it has an existant `value`, so we return the
+Entry we are looking for, and it has an existent `value`, so we return the
 `value`.
 
 Consider a lookup for `db.get('/a/z')`; this key does not exist, so we expect
@@ -658,7 +659,7 @@ The total metadata overhead for a database with M entries scales with `O(M
 
 The basic key/value semantics of hyperdb (as discussed in this DEP, not
 considering multi-writer changes) are not known to introduce new privacy issues
-when compared with, eg, storing binary values at key-like paths using the
+when compared with, e.g., storing binary values at key-like paths using the
 current ("legacy") hyperdrive system.
 
 A malicious writer could cause trouble for readers, even readers who do not
@@ -699,7 +700,7 @@ for these fields.
 
 Hyperdb is not backwards compatible with the existing hyperdrive metadata,
 meaning dat clients may need to support both versions during a transition
-period. This applies both to archives saved to disk (eg, in SLEEP) and to
+period. This applies both to archives saved to disk (e,g., in SLEEP) and to
 archives received and published to peers over the network.
 
 No changes to the Dat network wire protocol itself are necessary, only changes
@@ -721,7 +722,7 @@ Should we declare that `contendFeed` pointers *not* change over the history of
 a feed? See also <https://github.com/datprotocol/DEPs/issues/13>
 
 Need to think through deletion process with respect to listing a path prefix;
-will previously deleted nodes be occulded, or potentially show up in list
+will previously deleted nodes be occluded, or potentially show up in list
 results? Should be reviewed (by a non-author of this document) before accepted
 as a Draft.
 
