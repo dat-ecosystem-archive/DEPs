@@ -21,12 +21,12 @@ Authors:
 Hyperdb is an abstraction layer providing a general purpose distributed
 key/value store over the hypercore protocol. It is an iteration on the
 hyperdrive directory tree implementation, building on top of the hypercore
-append-only log abstraction layer. Keys are path-like strings (eg,
+append-only log abstraction layer. Keys are path-like strings (e.g.,
 `/food/fruit/kiwi`), and values are arbitrary binary blobs (generally under a
 megabyte).
 
 Hyperdrive (used by the Dat application) is expected to be re-implemented on
-top of hyperdb for improved performance with many files (eg, millions). The
+top of hyperdb for improved performance with many files (e.g., millions). The
 hyperdrive API should be largely unchanged, but the `metadata` format will be
 backwards-incompatible.
 
@@ -71,13 +71,13 @@ A Hyperdb database instance can be represented by a single hypercore feed (or
 several feeds in a multi-writer context), and is named, referenced, and
 discovered using the public and discovery keys of the hypercore feed (or the
 original feed if there are several). In a single-writer configuration, only a
-single node (holding the secret key) can mutate the database (eg, via `put` or
+single node (holding the secret key) can mutate the database (e.g., via `put` or
 `delete` actions).
 
 **Keys** can be any UTF-8 string. Path segments are separated by the forward
 slash character (`/`). Repeated slashes (`//`) are disallowed. Leading and
 trailing `/` are optional in application code: `/hello` and `hello` are
-equivalent. A key can be both a "path segment" and key at the same time; eg,
+equivalent. A key can be both a "path segment" and key at the same time; e.g.,
 `/a/b/c` and `/a/b` can both be keys at the same time.
 
 **Values** can be any binary blob, including empty (of zero length). For
@@ -96,7 +96,7 @@ creating a new one. A handle could represent any specific revision in history,
 or the "latest" revision.
 
 `db.put(key, value)`: inserts `value` (arbitrary bytes) under the path `key`.
-Requires read-write access.  Returns an error (eg, via callback) if there was a
+Requires read-write access.  Returns an error (e.g., via callback) if there was a
 problem.
 
 `db.get(key)`: Reading a non-existent `key` is an error. Read-only.
@@ -187,9 +187,9 @@ feed, with `feeds` containing a single entry (a pointer to the current feed
 itself), and `contendFeed` optionally set to a pointer to a paired contend
 feed.
 
-If *either* `feeds` *or* `contentFeed` are definined in an entry, *both* fields
-must be defined, so the new message can be refered to via `inflated`. In this
-case the entry is refered to as an "inflated entry".
+If *either* `feeds` *or* `contentFeed` are defined in an entry, *both* fields
+must be defined, so the new message can be referred to via `inflated`. In this
+case the entry is refereed to as an "inflated entry".
 
 
 ## Path Hashing 
@@ -197,7 +197,7 @@ case the entry is refered to as an "inflated entry".
 
 Every key path has component-wise fixed-size hash representation that is used
 by the trie. The concatenation of all path hashes yields a "path hash array"
-for the entire key.  Note that analagously to a hash map data structure, there
+for the entire key.  Note that analogously to a hash map data structure, there
 can be more than one key (string) with the same key hash in the same database
 with no problems: the hash points to a linked-list "bucket" of Entries, which
 can be iterated over linearly to find the correct value. 
@@ -257,7 +257,7 @@ As another example, the key `/a/b/c` converts into the 97-byte hash array:
 
 Note that "hash collisions" are rare with this hashing scheme, but are likely
 to occur with large databases (millions of keys), and collision have been
-generated as a proof of concept. Implementions should take care to properly
+generated as a proof of concept. Implementations should take care to properly
 handle collisions by verifying keys and following bucket pointers (see the next
 section).
 
@@ -457,7 +457,7 @@ the second bytestring chunk would be:
 - second pointer is (`feed=1 << 1 | 0`, `index=17`) or (varint 2, varint 17);
   note the `more` bit is low, as usual. In the extremely unlikely case of
   multiple collisions there could have been more pointers with `more` high
-  preceeding this one.
+  preceding this one.
 
 The overall bytestring would be:
 
@@ -616,7 +616,7 @@ The path hash array for this Entry (key) is:
 
 A backwards-incompatible change will have negative effects on the broader dat
 ecosystem: clients will need to support both versions protocol for some time
-(increasing maintenance burden), future clients may not interoperate with old
+(increasing maintenance burden), future clients may not inter-operate with old
 archives, etc. These downsides can partially be avoided by careful roll-out.
 
 For the specific use case of Dat archives, hyperdb will trivially increase
@@ -663,12 +663,12 @@ when compared with, e.g., storing binary values at key-like paths using the
 current ("legacy") hyperdrive system.
 
 A malicious writer could cause trouble for readers, even readers who do not
-trust the application-level contents of a feed. Implementions which may be
+trust the application-level contents of a feed. Implementations which may be
 exposed to arbitrary feeds from unknown sources on the internet should take
 care to the following scenarios: A malicious writer may be able to produce very
 frequent key path hash collisions, which could degrade to linear performance. A
 malicious writer could send broken trie structures that contain pointer loops,
-duplicate pointers, or other invalid contents. A malicous writer could write
+duplicate pointers, or other invalid contents. A malicious writer could write
 arbitrary data in value fields in an attempt to exploit de-serialization bugs.
 A malicious writer could leverage non-printing unicode characters to create
 database entries with user-indistinguishable names (keys).
@@ -738,7 +738,7 @@ happen after Draft status.
 
 There are implied "reasonable" limits on the size (in bytes) of both keys and
 values, but they are not formally specified. Protobuf messages have a hard
-specified limit of 2 GByte (due to 32-bit signed arthimetic), and most
+specified limit of 2 GByte (due to 32-bit signed arithmetic), and most
 implementations impose a (configurable) 64 MByte limit. Should this DEP impose
 specific limits on key and value sizes? Would be good to decide before Draft
 status.
