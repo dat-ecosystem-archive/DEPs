@@ -1,7 +1,7 @@
 
-Title: **DEP-0003: Hyperdb**
+Title: **DEP-0004: Hyperdb**
 
-Short Name: `0003-hyperdb`
+Short Name: `0004-hyperdb`
 
 Type: Standard
 
