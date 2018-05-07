@@ -185,7 +185,7 @@ types are:
 For the case of a single-writer feed, not using multi-writer features, it is
 sufficient to write a single Entry message as the first entry in the hypercore
 feed, with `feeds` containing a single entry (a pointer to the current feed
-itself), and `contendFeed` optionally set to a pointer to a paired contend
+itself), and `contentFeed` optionally set to a pointer to a paired content
 feed.
 
 If *either* `feeds` *or* `contentFeed` are defined in an entry, *both* fields
