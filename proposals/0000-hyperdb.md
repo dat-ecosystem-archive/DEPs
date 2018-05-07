@@ -734,9 +734,6 @@ room" for those changes, or should we call out the potential for future change?
 Probably not, should only describe existing solutions. This can be resolved
 after Draft.
 
-Review (or prove?) the `O(log(M))` intuition for `get()` operations. This could
-happen after Draft status.
-
 There are implied "reasonable" limits on the size (in bytes) of both keys and
 values, but they are not formally specified. Protobuf messages have a hard
 specified limit of 2 GByte (due to 32-bit signed arithmetic), and most
