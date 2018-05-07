@@ -1,11 +1,11 @@
 
-Title: **DEP-0000: Hyperdb**
+Title: **DEP-0003: Hyperdb**
 
-Short Name: `0000-hyperdb`
+Short Name: `0003-hyperdb`
 
 Type: Standard
 
-Status: Undefined (as of 2018-04-18)
+Status: Draft (as of 2018-05-06)
 
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/3)
 
@@ -755,5 +755,6 @@ basis for this DEP.
 - 2018-03-04: First draft for review
 - 2018-03-15: Hyperdb v3.0.0 is released
 - 2018-04-18: This DEP submitted for Draft review.
+- 2018-05-06: Merged as Draft after WG approval.
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
