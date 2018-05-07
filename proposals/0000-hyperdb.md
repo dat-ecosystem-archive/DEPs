@@ -175,12 +175,13 @@ types are:
   cases.
 - `inflate`: a "pointer" (reference to a feed index number) to the most recent
   entry in the feed that has the optional `feeds` and `contentFeed` fields set.
-  Not defined if `feeds` and `contentFeed` are defined.
+  Not defined if `feeds` and `contentFeed` are defined in the same message.
 - `feeds`: reserved for use with `multi-writer`. The safe single-writer value is
   to use the current feed's hypercore public key.
 - `contentFeed`: for applications which require a parallel "content" hypercore
   feed for larger data, this field can be used to store the 32-byte public key
-  for that feed.
+  for that feed. This field should have a single value for the entire history
+  of the feed (aka, it is not mutable).
 
 For the case of a single-writer feed, not using multi-writer features, it is
 sufficient to write a single Entry message as the first entry in the hypercore
@@ -718,9 +719,6 @@ Further logistical details are left to the forthcoming Multi-Writer DEP.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
-
-Should we declare that `contendFeed` pointers *not* change over the history of
-a feed? See also <https://github.com/datprotocol/DEPs/issues/13>
 
 Need to think through deletion process with respect to listing a path prefix;
 will previously deleted nodes be occluded, or potentially show up in list
