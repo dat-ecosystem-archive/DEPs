@@ -8,7 +8,7 @@
 This repository contains a series of "Dat Enhancement Proposal" (DEP)
 documents, part of the dat protocol development and standardization process.
 
-Accepted proposals will be viewable at [datprotocol.com](https://datprotocol.com).  New (draft) proposals and discussion can be viewed on [github][github-deps] under "Pull requests".
+Accepted proposals will be viewable at [datprotocol.org](https://datprotocol.org).  New (draft) proposals and discussion can be viewed on [github][github-deps] under "Pull requests".
 
 These documents might be interesting reading to anybody wanting to learn more
 about protocol nitty gritties or the consensus process, but the documentation
@@ -16,7 +16,7 @@ at [docs.datproject.org][docs] is specifically written with end-users and
 application developers in mind.
 
 [github-deps]: https://github.com/datprotocol/DEPs/
-[docs]: https://docs.datproject.com
+[docs]: https://docs.datproject.org
 
 ## The Process
 
