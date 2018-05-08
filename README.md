@@ -16,7 +16,7 @@ at [docs.datproject.org][docs] is specifically written with end-users and
 application developers in mind.
 
 [github-deps]: https://github.com/datprotocol/DEPs/
-[docs]: https://docs.datproject.com
+[docs]: https://docs.datproject.org
 
 ## The Process
 
