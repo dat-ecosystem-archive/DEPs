@@ -1,0 +1,61 @@
+
+Title: **DEP-0000: Session Data (Extension Message)**
+
+Short Name: `0000-session-data-extension`
+
+Type: Informative
+
+Status: Undefined (as of 2018-05-31)
+
+Github PR: (add HTTPS link here after PR is opened)
+
+Authors: [Paul Frazee](https://github.com/pfrazee)
+
+
+# Summary
+[summary]: #summary
+
+This DEP defines the non-standard `session-data` extension message used in the Dat replication protocol. This message provides a way to attach application data to a connection, commonly used for identifying the users and broadcasting personal keys. 
+
+
+# Motivation
+[motivation]: #motivation
+
+Applications frequently need to discover which users of the application are online (presence) in order to establish bidirectional communication. For example, a chat application which uses a shared HyperDB as the channel state may need to broadcast the Hypercore keys of each user in order to authorize the joining chat-users (as in the case of "Cabal"). It would also be useful to broadcast Hyperdrive archive keys (as in the case of "Fritter" and "Rotonde") or even simple plain-text identity (eg "my name is Bob") to be used with other communication mechanisms.
+
+This extension message will establish a common mechanism for broadcasting user and session data.
+
+
+# Reference Documentation
+[reference-documentation]: #reference-documentation
+
+This DEP is implemented using the Dat replication protocol's "extension messages." In order to broadcast support for this DEP, a client should declare the `'session-data'` extension in the replication handshake.
+
+Session-data can be announced at any time after the connection is established by sending an extension message of type `'session-data'`. The message may include a payload up to 256 bytes in length. Any additional bytes should be truncated by the receiving client. The payload is a buffer of any encoding. The session-data message should not be sent frequently and a client may choose to rate-limit its handling of the events (this DEP suggests "once per 5 seconds").
+
+The client should maintain a `sessionData` variable on each connection. This variable should be empty when a new connection is established. Any time a `'session-data'` extension message is received, the value of the `sessionData` variable should be updated to contain the payload of the message.
+
+The client may respond to the message by emitting an event, so that it may be handled by the client's application logic. The client should also make the most recent `sessionData` buffer available to the application logic after message is received.
+
+After publishing this DEP, the "Beaker Browser" will implement a Web API for exposing the `'session-data'` protocol to applications. It will restrict access so that the application code of a `dat://` site will only be able to set the session data for connections related to its own content.
+
+
+# Drawbacks
+[drawbacks]: #drawbacks
+
+This DEP may present privacy concerns, as it may be used to track users in a similar fashion to HTTP Cookies.
+
+
+# Rationale and alternatives
+[alternatives]: #alternatives
+
+Some applications have used the `peer id` and/or `userData` fields of the replication handshake message in order to broadcast this information. Those mechanisms are unsuitable for Web applications (as in the "Beaker browser") because the sites' applications are not executed reliably prior to the replication handshake.
+
+By using an extension message, we provide the same presence & discovery without relying on the timing of the application-code execution.
+
+
+# Changelog
+[changelog]: #changelog
+
+- 2018-05-31: First complete draft submitted for review
+
