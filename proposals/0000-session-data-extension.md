@@ -51,9 +51,9 @@ After publishing this DEP, the "Beaker Browser" will implement a Web API for exp
 # Rationale and alternatives
 [alternatives]: #alternatives
 
-Some applications have used the `peer id` and/or `userData` fields of the replication handshake message in order to broadcast this information. Those mechanisms are unsuitable for Web applications (as in the "Beaker browser") because the sites' applications are not executed reliably prior to the replication handshake.
+Some applications have used the `peerId` and/or `userData` fields of the replication handshake message in order to broadcast this information. Those mechanisms are unsuitable for Web applications (as in the "Beaker browser") because the sites' applications are not executed reliably prior to the replication handshake. By using an extension message, we provide the same presence & discovery without relying on the timing of the application-code execution.
 
-By using an extension message, we provide the same presence & discovery without relying on the timing of the application-code execution.
+An alternative approach would be to establish an ephemeral messaging channel, perhaps using a different extension message. This ephemeral channel would broadcast the payload to the client's application code as an event when it is received, but would not retain the most recent payload as session-data. This ephemeral channel would be less effective in Web applications (as in the "Beaker Browser") because it would rely on the application-code being active (loaded in a tab) at time of receipt, whereas the builtin session-data semantic makes it possible for the browser to retain the last payload on the applications' behalf.
 
 
 # Changelog
