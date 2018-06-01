@@ -7,7 +7,7 @@ Type: Informative
 
 Status: Undefined (as of 2018-05-31)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: https://github.com/datprotocol/DEPs/pull/27
 
 Authors: [Paul Frazee](https://github.com/pfrazee)
 
