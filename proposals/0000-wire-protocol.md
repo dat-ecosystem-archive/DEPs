@@ -221,7 +221,7 @@ message Have {
 This message is sent in the following contexts:
 
  - To inform the peer that data which was sent was rejected, for instance because it was not requested and pushes are not being allowed.
- - To announce blocks have been from local storage within a remote-wanted range.
+ - To announce blocks have been removed from local storage within a remote-wanted range.
 
 ```
 message Unhave {
