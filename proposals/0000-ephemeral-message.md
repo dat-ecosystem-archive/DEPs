@@ -44,8 +44,8 @@ After publishing this DEP, the "Beaker Browser" will implement a Web API for exp
 [drawbacks]: #drawbacks
 
 - This DEP may present privacy concerns, as it may be used to track users in a similar fashion to HTTP Cookies, or be used to exfiltrate data.
-- The payload of the `'session-data'` message is not authenticated in any way. The lack of trust must be considered by applications which leverage the data.
-- If the recipient of the `'session-data'` message is not authenticated (as is currently the case in all Dat replication connections) the client will not know who is receiving the payload and may broadcast sensitive information.
+- The payload of the `'em'` message is not authenticated in any way. The lack of trust must be considered by applications which leverage the data.
+- If the recipient of the `'em'` message is not authenticated (as is currently the case in all Dat replication connections) the client will not know who is receiving the payload and may broadcast sensitive information.
 
 
 # Changelog
