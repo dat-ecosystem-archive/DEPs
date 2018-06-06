@@ -31,9 +31,20 @@ This extension message will establish a common mechanism for sending ephemeral m
 
 This DEP is implemented using the Dat replication protocol's "extension messages." In order to broadcast support for this DEP, a client should declare the `'em'` extension in the replication handshake.
 
-Ephemeral messages can be sent at any time after the connection is established by sending an extension message of type `'em'`. The message may include a payload up to 256 bytes in length. Any additional bytes should be truncated by the receiving client. The payload is a buffer of any encoding.
+Ephemeral messages can be sent at any time after the connection is established by sending an extension message of type `'em'`. The message includes 1 byte of header information followed by a payload no longer than 10 kilobytes. Any additional bytes should be truncated by the receiving client. Therefore the message is encoded as follows:
 
-The client may respond to the message by emitting an event, so that it may be handled by the client's application logic.
+```
+header  (1 byte)
+payload (0-10000 bytes)
+```
+
+The first 6 header bits are reserved. The payload's encoding may be specified in the last two header bits. Possible values are:
+
+ - `00` - binary
+ - `01` - utf8
+ - `10` - json
+
+The receiving client should attempt to decode the payload according to this encoding-value. The client may respond to the message by emitting an event, so that it may be handled by the client's application logic.
 
 No acknowledgment of receipt will be provided (no "ACK").
 
@@ -51,5 +62,6 @@ After publishing this DEP, the "Beaker Browser" will implement a Web API for exp
 # Changelog
 [changelog]: #changelog
 
+- 2018-06-05: Added a header with 'encoding' values and increased the max payload size from 256b to 10kb.
 - 2018-06-05: First complete draft submitted for review
 
