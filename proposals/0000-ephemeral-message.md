@@ -7,7 +7,7 @@ Type: Informative
 
 Status: Undefined (as of 2018-06-05)
 
-Github PR: 
+Github PR: https://github.com/datprotocol/DEPs/pull/28
 
 Authors: [Paul Frazee](https://github.com/pfrazee)
 
@@ -51,5 +51,5 @@ After publishing this DEP, the "Beaker Browser" will implement a Web API for exp
 # Changelog
 [changelog]: #changelog
 
-- 2018-05-31: First complete draft submitted for review
+- 2018-06-05: First complete draft submitted for review
 
