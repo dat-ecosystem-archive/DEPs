@@ -1,11 +1,11 @@
 
-Title: **DEP-0000: Session Data (Extension Message)**
+Title: **DEP-0006: Session Data (Extension Message)**
 
-Short Name: `0000-session-data-extension`
+Short Name: `0006-session-data-extension`
 
 Type: Informative
 
-Status: Undefined (as of 2018-05-31)
+Status: Draft (as of 2018-06-06)
 
 Github PR: https://github.com/datprotocol/DEPs/pull/27
 
@@ -59,5 +59,6 @@ An alternative approach would be to establish an ephemeral messaging channel, pe
 # Changelog
 [changelog]: #changelog
 
+- 2018-06-06: Merged as draft
 - 2018-05-31: First complete draft submitted for review
 
