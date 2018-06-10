@@ -200,136 +200,192 @@ under `source/`. If the "local" feed is different from the original feed (aka,
 local is not the "Original Writer"), it is written to `local/`. All other feeds
 are written under directories prefixed `peers/<feed-discovery-key>/`.
 
+## Feeds and Vector Clocks
 
-## Directed acyclic graph
-[dag]: #dag
+At any point in time, each writer has a potentially unique view of the
+"current" state of the database as a whole; this is the nature of real-world
+distributed systems. For example, a given write might have the most recent
+appends from one peer (eg, only seconds old), but be missing much older appends
+from another (eg, days or weeks out of date). By having each writer include
+metadata about their percieved state of the system as a whole in operations to
+their Feed, all writers are able to collectively converge on an "eventually
+consistent" picture of the database as whole (this process will be described in
+the next section).
 
-The combination of all operations performed on a hyperdb by all of its members
-forms a DAG (*directed acyclic graph*). Each write to the database (setting a
-key to a value) includes information to point backward at all of the known
-"heads" in the graph.
+A writer's "current known state" of the database consists of the set of active
+Feeds, and for each the most recent entry sequence number ("version"). This
+state can be serialized as an array of integers, refered to as a [vector
+clock](https://en.wikipedia.org/wiki/Vector_clock).
 
-To illustrate what this means, let's say Alice starts a new hyperdb and writes 2
-values to it:
+Each `put()` operation on the database appends a node to the writer's `local`
+feed, and contains the writer's vector clock as observed at that time.
+`InflatedEntry` nodes also contain a list of all known authorized Feeds;
+inflated nodes only need to be written when the Feed list changes. Every
+non-inflated entry contains a pointer back to the most recent inflated entry;
+inflated entries themselves contain a pointer back to the previous inflated
+entry (the first inflated entry has a null pointer). Elements of a vector clock
+are ordered by the Feed list from the corresponding Inflated entry.
 
-```
-// Feed
+By convention, the order of Feed lists is to start with the writer's local
+feed first, then proceed by the order in which Feeds were discovered. Note that
+this ordering is not consistent across writers, only within the same feed.
 
-0 (/foo/bar = 'baz')
-1 (/foo/2   = '{ "some": "json" }')
+As an example, if a node (non-inflated entry) had a vector clock of `[0, 2,
+5]`, that would mean:
 
-
-// Graph
-
-Alice:  0  <---  1
-```
-
-Where sequence number 1 (the second entry) refers to sequence number 0 on the
-same feed (Alice's).
-
-Now Alice *authorizes* Bob to write to the hyperdb. Internally, this means Alice
-writes a special message to her feed saying that Bob's feed (identified by his
-public key) should be read and replicated in by other participants. Her feed
-becomes
-
-```
-// Feed
-
-0 (/foo/bar = 'baz')
-1 (/foo/2   = '{ "some": "json" }')
-2 (''       = '')
+- when this node was written, the largest seq # in the writer's local fed was 0
+- when this node was written, the largest seq # in the second known feed was 2
+- when this node was written, the largest seq # in the third known feed was 5
 
 
-// Graph
+## Multi-Feed Aware hyperdb
+[multi-aware]: #multi-aware
 
-Alice: 0  <---  1  <---  2
-```
+The [hyperdb DEP](hyperdb-dep) specifies the procedures for lookup (`get()`)
+and append (`put()`) operations to the database, as well as binary encoding
+schemes for entry messages.
 
-Authorization is formatted internally in a special way so that it isn't
-interpreted as a key/value pair.
-
-Now Bob writes a value to his feed, and then Alice and Bob sync. The result is:
-
-```
-// Feed
-
-//// Alice
-0 (/foo/bar = 'baz')
-1 (/foo/2   = '{ "some": "json" }')
-2 (''       = '')
-
-//// Bob
-0 (/a/b     = '12')
+Note that the trie encoding specifies pointers in a `(feed, entry)` pair
+format. The `feed` integer is an index into the most recent Feed list (found in
+the most recent inflated entry; see the last section). When working with a
+multi-writer hyperdb database, simply look up entries in the appropriate feed,
+instead of only looking in the current feed. The next section ("Consistent
+History") describes which entry (or entries) to start with instead of simply
+assuming the most recent entry from the local feed.
 
 
-// Graph
+## Consistent History
+[consist-history]: #consist-history
 
-Alice: 0  <---  1  <---  2
-Bob  : 0
-```
+The set of all appended nodes in all feeds of a hyperdb, and all the vector
+clock pointers between them, forms a "directed acyclic graph" (DAG). Any node
+which does not have another node pointing to it is called a "head" (this
+terminology is similar to that used in git). At any point in time, an observed
+copy of a database has one or more heads, each representing the top of a
+tree-like graph. In the trivial case of a non-multi-writer hyperdb, there is
+always only a single head: the most recent entry in the local feed. Just after
+appending to the local feed, there is also always a single head, because that
+node's vector clock will reference all know most recent entries from other
+feeds. It is only when nodes are appended by separate writers who did not know
+of the others' concurrent action (and then these changes are replicated) that
+there are multiple heads.
 
-Notice that none of Alice's entries refer to Bob's, and vice versa. This is
-because neither has written any entries to their feeds since the two became
-aware of each other (authorized & replicated each other's feeds).
+When operating on the database (eg, executing a `get()` operation), all heads
+must be considered. The lookup proceedure documented in the [hyperdb
+DEP](hyperdb-dep) must be repeated for each head, and nodes returned
+representing the set of all unique values.
 
-Right now there are two "heads" of the graph: Alice's feed at seq 2, and Bob's
-feed at seq 0.
-
-Next, Alice writes a new value, and her latest entry will refer to Bob's:
-
-```
-// Feed
-
-//// Alice
-0 (/foo/bar = 'baz')
-1 (/foo/2   = '{ "some": "json" }')
-2 (''       = '')
-3 (/foo/hup = 'beep')
-
-//// Bob
-0 (/a/b     = '12')
-
-
-// Graph
-
-Alice: 0  <---  1  <---  2  <--/  3
-Bob  : 0  <-------------------/
-```
-
-Because Alice's latest feed entry refers to Bob's latest feed entry, there is
-now only one "head" in the database. That means there is enough information in
-Alice's seq=3 entry to find any other key in the database. In the last example,
-there were two heads (Alice's seq=2 and Bob's seq=0); both of which would need
-to be read internally in order to locate any key in the database.
-
-Now there is only one "head": Alice's feed at seq 3.
-
-
-
-## Vector clock
-
-Each node stores a [vector clock](https://en.wikipedia.org/wiki/Vector_clock) of
-the last known sequence number from each feed it knows about. This is what forms
-the DAG structure.
-
-A vector clock on a node of, say, `[0, 2, 5]` means:
-
-- when this node was written, the largest seq # in my local fed is 0
-- when this node was written, the largest seq # in the second feed I have is 2
-- when this node was written, the largest seq # in the third feed I have is 5
-
-For example, Bob's vector clock for Alice's seq=3 entry above would be `[0, 3]`
-since he knows of her latest entry (seq=3) and his own (seq=0). Note that the
-order of clocks is not consistent across writers, only within the same feed.
-
-The vector clock is used for correctly traversing history. This is necessary for
-the `db#heads` API as well as `db#createHistoryStream`.
+The situation where a `get()` operation multiple heads returns different values
+for the same key is called a "conflict" and requires a "merge" to resolve. Some
+writer (either a human being or application-layer code) must decide on the
+correct value for the key and write that value as a new entry (with a vector
+clock that includes the previous heads). The procedure for chosing the best
+value to use in a given conflict is sometimes easy to determine, but is
+impossible to determine algorithmically in the general case. See the "Usage"
+section for more details.
 
 
 # Examples
 [examples]: #examples
 
-TODO:
+Let's say Alice starts a new hyperdb and writes two key/value entries to it:
+
+```
+// Operations
+Alice: db.put('/foo/bar', 'baz')
+Alice: db.put('/foo/2',   '{"json":3}')
+
+// Alice's Feed
+0 (key='/foo/bar', value='baz',
+   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+1 (key='/foo/2', value='{"json":3}',
+   vector_clock=[0], inflated=0)
+
+// Graph
+Alice:  0  <---  1
+```
+
+The vector clock at `seq=1` points back to `seq=0`.
+
+Next Alice *authorizes* Bob to write to the database. Internally, this means Alice
+writes an Inflated entry to her feed that contains Bob's Feed (identified by his
+public key) in her feed list.
+
+```
+// Operations
+Alice: db.authorize('b0b123...')
+
+// Alice's Feed
+0 (key='/foo/bar', value='baz',
+   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+1 (key='/foo/2', value='{"json":3}',
+   vector_clock=[0], inflated=0)
+2 (key=null, value=null,
+   vector_clock=[1], inflated=0, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
+
+// Graph
+Alice: 0  <---  1  <---  2
+```
+
+Bob writes a value to his feed, and then Alice and Bob sync. The result is:
+
+```
+// Operations
+Bob: db.put('/a/b', '12)
+
+// Alice's Feed
+0 (key='/foo/bar', value='baz',
+   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+1 (key='/foo/2', value='{"json":3}',
+   vector_clock=[0], inflated=0)
+2 (key=null, value=null,
+   vector_clock=[1], inflated=0, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
+
+// Bob's Feed
+0 (key='/a/b', value='12',
+   vector_clock=[], inflated=null, feeds=['b0b123...']) (InflatedEntry))
+
+// Graph
+Alice: 0  <---  1  <---  2
+Bob  : 0
+```
+
+Notice that none of Alice's entries refer to Bob's, and vice versa. Neither has
+written any entries to their feeds since the two became aware of each other.
+Right now there are two "heads" of the graph: Alice's feed at seq 2, and Bob's
+feed at seq 0. Any `get()` operations would need to descend from both heads,
+though in this situation there would be no conflicts as the keys in the two
+feeds are disjoint.
+
+Next, Alice writes a new value, and her latest entry will refer to Bob's:
+
+```
+// Operations
+Alice: db.put('/foo/hup', 'beep')
+
+// Alice's Feed
+0 (key='/foo/bar', value='baz',
+   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+1 (key='/foo/2', value='{"json":3}',
+   vector_clock=[0], inflated=0)
+2 (key=null, value=null,
+   vector_clock=[1, null], inflated=0, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
+3 (key='/foo/hup', value='beep',
+   vector_clock=[2,0], inflated=2)
+
+// Bob's Feed
+0 (key='/a/b', value='12',
+   vector_clock=[], inflated=null, feeds=['b0b123...']) (InflatedEntry))
+
+
+// Graph
+Alice: 0  <---  1  <---  2  <--/  3
+Bob  : 0  <-------------------/
+```
+
+Alice's latest feed entry now points to Bob's latest feed entry, and there is
+only one "head" in the database. This means that any `get()` operations only
+need to run once, starting at `seq=3` in Alice's feed.
 
 
 # Security and Privacy Concerns
@@ -355,6 +411,10 @@ creating an new database.
 The read semantics of hyperdb are unchanged from hypercore: an actor does not
 need to be "authorized" (for writing) to read the full history of a database,
 they only need the public key.
+
+As noted in other DEPs, a malicious writer can potentially execute a denial of
+service (DoS) attack by appending hyperdb entries that for a cyclic loop of
+references.
 
 
 # Drawbacks
@@ -409,6 +469,18 @@ What is the technical term for the specific CRDT we are using?
 What is the actual on-disk layout (folder structure), if not what is documented
 here?
 
+Couldn't the local feed's sequence number be skipped from vector clocks,
+because it's implied by the sequence number of the hypercore entry itself? Same
+with the key in the feed list (for inflated entries).
+
+If there are multiple heads, but they all return the same `value` for a `get()`
+operation, how is it decided which `node` will be returned? AKA, values are the
+same, but node metadata might not be (order of vector clock, etc).
+
+Suspect that some details are off in the example: shouldn't the InflatedEntry
+authorizing a new feed include a vector clock reference to a specific seq in
+that feed? Should new local (not yet authorized) feeds reference reference
+their source in an initial InflatedEntry (at seq=0)?
 
 # Changelog
 [changelog]: #changelog
