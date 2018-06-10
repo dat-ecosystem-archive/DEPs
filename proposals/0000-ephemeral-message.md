@@ -33,24 +33,18 @@ A specific use case for this extension is to enable a new Web API which will exp
 
 This DEP is implemented using the Dat replication protocol's "extension messages." In order to broadcast support for this DEP, a client should declare the `'ephemeral'` extension in the replication handshake.
 
-Ephemeral messages can be sent at any time after the connection is established by sending an extension message of type `'ephemeral'`. The message includes 1 byte of header information followed by a payload no longer than 10 kilobytes. Any additional bytes should be truncated by the receiving client. Therefore the message is encoded as follows:
+Ephemeral messages can be sent at any time after the connection is established by sending an extension message of type `'ephemeral'`. The message payload is a protobuf with the following schema:
 
 ```
-header  (1 byte)
-payload (0-10000 bytes)
+message EphemeralMessage {
+  optional string contentType = 1;
+  required bytes payload = 2;
+}
 ```
 
-The first 6 header bits are reserved. The payload's encoding may be specified in the last two header bits. Possible values are:
+The `contentType` string should provide a valid MIME type. If none is specified, the encoding should be considered `application/octet-stream`.
 
- - `00` - binary
- - `01` - utf8
- - `10` - json
-
-The receiving client should attempt to decode the payload according to this encoding-value. The client may respond to the message by emitting an event, so that it may be handled by the client's application logic.
-
-No acknowledgment of receipt will be provided (no "ACK").
-
-After publishing this DEP, the "Beaker Browser" will implement a Web API for exposing the `'ephemeral'` protocol to applications. It will restrict access so that the application code of a `dat://` site will only be able to send ephemeral messages on connections related to its own content.
+The client may respond to the message by emitting an event, so that it may be handled by the client's application logic. No acknowledgment of receipt will be provided (no "ACK").
 
 
 # Drawbacks
@@ -64,6 +58,7 @@ After publishing this DEP, the "Beaker Browser" will implement a Web API for exp
 # Changelog
 [changelog]: #changelog
 
+- 2018-06-10: Change the payload encoding to protobuf and provide a more flexible content-type field.
 - 2018-06-10: Expand on the motivation of this DEP
 - 2018-06-10: Change the message identifier to `'ephemeral'`
 - 2018-06-05: Added a header with 'encoding' values and increased the max payload size from 256b to 10kb.
