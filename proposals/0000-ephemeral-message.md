@@ -23,7 +23,9 @@ This DEP defines the non-standard `ephemeral` extension message used in the Dat 
 
 While Dat is effective at sharing persistent datasets, applications frequently need to transmit extra information which does not need to persist. This kind of information is known as "ephemeral." Examples include: sending chat messages, proposing changes to a dat, alerting peers to events, broadcasting identity information, and sharing the URLs of related datasets.
 
-This extension message will establish a common mechanism for sending ephemeral messages of an arbitrary composition.
+This DEP was motivated by the need for a quick solution to these use-cases. It establishes a mechanism for sending ephemeral messages over existing Dat connections. At time of writing, it is unclear whether this mechanism will be used in the long-term, or superseded by a more flexible messaging channel.
+
+A specific use case for this extension is to enable a new Web API which will expose peer message-passing channels to in-browser applications. Such an API would restrict access so that the application code of a `dat://` site will only be able to send ephemeral messages on connections related to its own content.
 
 
 # Reference Documentation
@@ -62,6 +64,7 @@ After publishing this DEP, the "Beaker Browser" will implement a Web API for exp
 # Changelog
 [changelog]: #changelog
 
+- 2018-06-10: Expand on the motivation of this DEP
 - 2018-06-10: Change the message identifier to `'ephemeral'`
 - 2018-06-05: Added a header with 'encoding' values and increased the max payload size from 256b to 10kb.
 - 2018-06-05: First complete draft submitted for review
