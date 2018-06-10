@@ -69,7 +69,8 @@ design and implement:
 - secure key distribution and authentication (eg, if a friend should be given
   write access to a hyperdb database, how is that friend's feed key found and
   verified?)
-- merge conflict resolution, potentially using application-layer semantics
+- merge conflict resolution (using the provided API), potentially using
+  application-layer semantics
 
 Before we go any further, a few definitions:
 
@@ -120,8 +121,14 @@ feed (corresponding to `key`) to be included in the database.
 ## Scaling
 [scaling]: #scaling
 
-TODO: brief note on scaling properties (eg, reasonable numbers of writers per
-database)
+There is some overhead associated with each "writer" added to the feed,
+impacting the number of files on disk, memory use, and the computational cost
+of some lookup oprations. The design should easily accomodate dozens of
+writers, and should scale to 1,000 writers without too much additional
+overhead. Note that a large number of writers also implies a larger number and
+rate of append operations, and additional network connections, which may cause
+scaling issues on their own. More real-world experience and benchmarking is
+needed in this area.
 
 
 # Implementation
@@ -298,7 +305,8 @@ A vector clock on a node of, say, `[0, 2, 5]` means:
 - when this node was written, the largest seq # in the third feed I have is 5
 
 For example, Bob's vector clock for Alice's seq=3 entry above would be `[0, 3]`
-since he knows of her latest entry (seq=3) and his own (seq=0).
+since he knows of her latest entry (seq=3) and his own (seq=0). Note that the
+order of clocks is not consistent across writers, only within the same feed.
 
 The vector clock is used for correctly traversing history. This is necessary for
 the `db#heads` API as well as `db#createHistoryStream`.
@@ -329,6 +337,13 @@ developers.
 # Rationale and alternatives
 [alternatives]: #alternatives
 
+Design goals for hyperdb (including the multi-writer feature) included:
+
+- ability to execute operations (get, put) with a sparse (partial) replication
+  of the database, using as few additional network requests as possible
+- minimal on-disk and on-wire overhead
+- implemented on top of an append-only log (to build on top of hypercore)
+
 TODO:
 
 - Why is this design the best in the space of possible designs?
@@ -344,6 +359,7 @@ What is the technical term for the specific CRDT we are using?
 
 If there are conflicts resulting in ambiguity of whether a key has been deleted
 or has a new value, does `db.get(key)` return an array of `[new_value, None]`?
+Answer: `get` always returns nodes (not just values), so context is included. In the case of a deletion, a the value within the node will be `null`.
 
 What is a reasonable large number of writers to have in a single database?
 Write "Scaling" section.
@@ -356,8 +372,10 @@ As of March 2018, Mathias Buus (@mafintosh) is leading development of a hyperdb
 nodejs module on [github](https://github.com/mafintosh/hyperdb), which includes
 multi-writer features and is the basis for this DEP.
 
+Jim Pick (@jimpick) has been an active contributor working out multi-writer details.
+
 - 2017-12-06: @noffle publishes `ARCHITECTURE.md` overview in the
   [hyperdb github repo][arch_md]
-- 2018-03-XX: First partial draft submitted for review
+- 2018-06-XX: First partial draft submitted for review
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
