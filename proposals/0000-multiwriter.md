@@ -191,9 +191,12 @@ The fields of interest for multi-writer are:
   entry. Included in every Entry and InflatedEntry.
 - `inflate`: a back-pointer to the entry index of the most recent InflatedEntry
   (containing a feed metadata change). Included in every Entry and
-  InflatedEntry.
+  InflatedEntry. Should not be included for the very first entry in a feed
+  (which is an InflatedEntry).
 - `feeds`: list of public keys for each writer's feed. Only included in
-  InflatedEntry, and only when feeds have changed.
+  InflatedEntry, and only when feeds have changed. Does include a
+  self-reference to the current (local) Feed's key, always as the first
+  element.
 
 When serialized on disk in a SLEEP directory, the original feed is written
 under `source/`. If the "local" feed is different from the original feed (aka,
@@ -297,7 +300,7 @@ Alice: db.put('/foo/2',   '{"json":3}')
 
 // Alice's Feed
 0 (key='/foo/bar', value='baz',
-   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+   vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
 1 (key='/foo/2', value='{"json":3}',
    vector_clock=[0], inflated=0)
 
@@ -317,7 +320,7 @@ Alice: db.authorize('b0b123...')
 
 // Alice's Feed
 0 (key='/foo/bar', value='baz',
-   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+   vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
 1 (key='/foo/2', value='{"json":3}',
    vector_clock=[0], inflated=0)
 2 (key=null, value=null,
@@ -335,7 +338,7 @@ Bob: db.put('/a/b', '12)
 
 // Alice's Feed
 0 (key='/foo/bar', value='baz',
-   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+   vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
 1 (key='/foo/2', value='{"json":3}',
    vector_clock=[0], inflated=0)
 2 (key=null, value=null,
@@ -343,7 +346,7 @@ Bob: db.put('/a/b', '12)
 
 // Bob's Feed
 0 (key='/a/b', value='12',
-   vector_clock=[], inflated=null, feeds=['b0b123...']) (InflatedEntry))
+   vector_clock=[0], inflated=null, feeds=['b0b123...']) (InflatedEntry))
 
 // Graph
 Alice: 0  <---  1  <---  2
@@ -365,7 +368,7 @@ Alice: db.put('/foo/hup', 'beep')
 
 // Alice's Feed
 0 (key='/foo/bar', value='baz',
-   vector_clock=[], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+   vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
 1 (key='/foo/2', value='{"json":3}',
    vector_clock=[0], inflated=0)
 2 (key=null, value=null,
@@ -375,7 +378,7 @@ Alice: db.put('/foo/hup', 'beep')
 
 // Bob's Feed
 0 (key='/a/b', value='12',
-   vector_clock=[], inflated=null, feeds=['b0b123...']) (InflatedEntry))
+   vector_clock=[0], inflated=null, feeds=['b0b123...']) (InflatedEntry))
 
 
 // Graph
@@ -479,8 +482,9 @@ same, but node metadata might not be (order of vector clock, etc).
 
 Suspect that some details are off in the example: shouldn't the InflatedEntry
 authorizing a new feed include a vector clock reference to a specific seq in
-that feed? Should new local (not yet authorized) feeds reference reference
-their source in an initial InflatedEntry (at seq=0)?
+that feed? Should new local (not yet authorized) feeds reference
+their source in an initial InflatedEntry (eg, Bob at seq=0)? Should the first
+InflatedEntry in a feed point to itself in it's vector clock?
 
 # Changelog
 [changelog]: #changelog
