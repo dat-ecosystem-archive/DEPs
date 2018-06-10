@@ -23,7 +23,10 @@ This DEP defines the non-standard `session-data` extension message used in the D
 
 Applications frequently need to discover which users of the application are online (presence) in order to establish bidirectional communication. For example, a chat application which uses a shared HyperDB as the channel state may need to broadcast the Hypercore keys of each user in order to authorize the joining chat-users (as in the case of "Cabal"). It would also be useful to broadcast Hyperdrive archive keys (as in the case of "Fritter" and "Rotonde") or even simple plain-text identity (eg "my name is Bob") to be used with other communication mechanisms.
 
-This extension message will establish a common mechanism for broadcasting user and session data.
+This DEP was motivated by the need for a quick solution to these use-cases. It's expected to be a stepping stone to a more sophisticated solution. It outlines an extension message which broadcasts user and session data. The two primary use-cases considered are:
+
+ 1. For small apps to be able to discover peers when shared. Examples include a dat-app containing an event invite, or a collaborative document. Scale would be kept small by the fact that the dat-app is only shared with friends. If too many people start showing up, the app could stop authorizing or reading their data.
+ 2. For dat-apps like Cabal and Fritter to experiment with discovery policies at a larger scale. Cabal (a chat app) intended to use a HyperDB which any user can "join" as a writer and start posting to. This DEP would make it simple for Cabal to send the local keys of joining users to the owner, to be added to the "channel" HyperDB.
 
 
 # Reference Documentation
