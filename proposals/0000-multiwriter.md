@@ -113,7 +113,10 @@ A "node" is a data structure representing a database entry, including the
 `db.get(key)` (as described in the [hyperdb DEP][dep-hyperdb])
 returns an array of nodes. If it is unambiguous what the consistent state of a key is,
 the array will have only that one value. If there is a conflict (ambiguity),
-multiple nodes will be returned.
+multiple nodes will be returned. If a key has been deleted from the database, a
+node with the `deleted` flag will be returned; note that such "tombstone" nodes
+can still have a `value` field, which may contain application-specific metadata
+(such as a timestamp).
 
 If multiple nodes are returned from a `get`, the writer should attempt to merge
 the values (or chose one over the other) and write the result to the database
@@ -125,10 +128,13 @@ be more ergonomic for applications which do not intend to support multiple
 writers per database.
 
 `db.authorize(key)` will write metadata to the local feed authorizing the new
-feed (corresponding to `key`) to be included in the database.
+feed (corresponding to `key`) to be included in the database. Once authorized,
+a feed may further authorize additional feeds (recursively).
 
 `db.authorized(key)` (returning a boolean) indicates whether the given `key` is
 an authorized writer to the hyperdb database.
+
+At the time of this DEP there is no mechanism for revoking authorization.
 
 [dep-hyperdb]: https://github.com/datprotocol/DEPs/blob/master/proposals/0004-hyperdb.md
 
@@ -192,9 +198,8 @@ The fields of interest for multi-writer are:
 When serialized on disk in a SLEEP directory, the original feed is written
 under `source/`. If the "local" feed is different from the original feed (aka,
 local is not the "Original Writer"), it is written to `local/`. All other feeds
-are written under directories prefixed `./peers/<feed-discovery-key>/`.
+are written under directories prefixed `peers/<feed-discovery-key>/`.
 
-TODO: the above disk format is incorrect?
 
 ## Directed acyclic graph
 [dag]: #dag
@@ -300,14 +305,6 @@ to be read internally in order to locate any key in the database.
 Now there is only one "head": Alice's feed at seq 3.
 
 
-## Authorization
-
-The set of hypercores are *authorized* in that the original author of the first
-hypercore in a hyperdb must explicitly denote in their append-only log that the
-public key of a new hypercore is permitted to edit the database. Any authorized
-member may authorize more members. There is no revocation or other author
-management elements currently.
-
 
 ## Vector clock
 
@@ -338,17 +335,50 @@ TODO:
 # Security and Privacy Concerns
 [privacy]: #privacy
 
-TODO:
+As noted above, there is no existing mechanism for removing authorization for a
+feed once added, and an authorized feed may recursively authorize additional
+feeds. There is also no mechanism to restrict the scope of an authorized feed's
+actions (eg, limit to only a specific path prefix). This leaves application
+designers and users with few tools to control trust or access ("all or
+nothing"). Care must be taken in particular if self-mutating software is being
+distributed via hyperdb, or when action may be taken automatically based on the
+most recent content of a database (eg, bots or even third-party tools may
+publish publicly, or even take real-world action like controlling an electrical
+relay).
+
+There is no mechanism to remove malicious history (or any history for that
+matter); if an authorized (but hostile) writer appends a huge number of key
+operations (bloating hyperdb metadata size), or posts offensive or illegal
+content to a database, there is no way to permanently remove the data without
+creating an new database.
+
+The read semantics of hyperdb are unchanged from hypercore: an actor does not
+need to be "authorized" (for writing) to read the full history of a database,
+they only need the public key.
 
 
 # Drawbacks
 [drawbacks]: #drawbacks
 
-Significant increase in implementation, application, and user experience
-complexity.
+Mutli-writer capability incurs a non-trivial increase in library, application,
+and user experience complexity. For many applications, collaboration is an
+essential feature, and the complexity is easily justified. To minimize
+complexity for applications which do not need multi-writer features,
+implementation authors should consider configuration modes which hide the
+complexity of unused features. For example, by having an option to returning a
+single node for a `get()` (and throw an error if there is a conflict), or a
+flag to throw an error if a database unexpectedly contains more than a single
+feed.
 
-Two hard problems (merges and secure key distribution) are left to application
-developers.
+Two tasks (conflict merges and secure key distribution) are left to application
+developers. Both of these are Hard Problems. The current design mitigates the
+former by reducing the number of merge conflicts that need to be handled by an
+application (aka, only the non-trivial ones need to be handled), and
+implementation authors are encouraged to provide an ergonomic API for writing
+conflict resolvers. The second problem (secure key distribution) is out of
+scope for this DEP. It is hoped that at least one pattern or library will
+emerge from the Dat ecosystem such that each application author doesn't need to
+invent a solution from scratch.
 
 
 # Rationale and alternatives
@@ -361,29 +391,23 @@ Design goals for hyperdb (including the multi-writer feature) included:
 - minimal on-disk and on-wire overhead
 - implemented on top of an append-only log (to build on top of hypercore)
 
-TODO:
+If a solution for core use cases like collaboration and multi-device
+synchronization is not provided at a low level (as this DEP provides), each
+application will need to invent a solution at a higher level, incuring
+duplicated effort and a higher risk of bugs.
 
-- Why is this design the best in the space of possible designs?
-- What other designs have been considered and what is the rationale for not choosing them?
-- What is the impact of not doing this?
+As an alternative to CRDTs, Operational Transformation (OT) has a reputation
+for being more difficult to understand and implement.
 
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
 What is the technical term for the specific CRDT we are using?
-"Operation-based"?
+"Operation-based" or "State-based"?
 
-If there are conflicts resulting in ambiguity of whether a key has been deleted
-or has a new value, does `db.get(key)` return an array of `[new_value, None]`?
-Answer: `get` always returns nodes (not just values), so context is included. In the case of a deletion, a the value within the node will be `null`.
-
-What is a reasonable large number of writers to have in a single database?
-Write "Scaling" section.
-
-The javascript hyperdb implementation has a new `deleted` flag and `Header`
-prefix message. These fall under the scope of the `hyperdb` DEP; should they be
-mentioned here?
+What is the actual on-disk layout (folder structure), if not what is documented
+here?
 
 
 # Changelog
