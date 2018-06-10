@@ -75,7 +75,10 @@ design and implement:
 Before we go any further, a few definitions:
 
 *Feed*: A hypercore feed: an append-only log of *Entries*, which can be
-arbitrary data blobs. Hyperdb is built on top of several Feeds.
+arbitrary data blobs.
+
+*Database*: in this context, a Hyperdb key/value database. Built from several
+Feeds (two Feeds per Writer).
 
 *Writer*: a user (or user controlled device or software agent) that has a
 distinct feed with a public/private key pair, and thus the ability to append
@@ -101,21 +104,33 @@ replicated data type" ([CRDT][crdt]).
 [crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type
 
 
-## API
+## Core API
 [api]: #api
 
-The `db.get(key)` method described in the [hyperdb DEP][dep-hyperdb] actually
-returns an array of values. If it is unambiguous what the consistent value is,
-the array will have only that one value. If there is a conflict, multiple
-values will be returned. If multiple values are returned, the writer should
-attempt to merge the values (or chose one over the other) and write the result
-to the database with `db.put(key, value)`.
+A "node" is a data structure representing a database entry, including the
+`key`, `value`, and feed that the entry is commited to.
+
+`db.get(key)` (as described in the [hyperdb DEP][dep-hyperdb])
+returns an array of nodes. If it is unambiguous what the consistent state of a key is,
+the array will have only that one value. If there is a conflict (ambiguity),
+multiple nodes will be returned.
+
+If multiple nodes are returned from a `get`, the writer should attempt to merge
+the values (or chose one over the other) and write the result to the database
+with `db.put(key, value)`. Client libraries can make this process more
+ergonomic by accepting a helper function to select between multiple nodes.
+Libraries can also offer an option to either directly return the value of a
+single node (instead of the node itself), or raise an error; this is likely to
+be more ergonomic for applications which do not intend to support multiple
+writers per database.
 
 `db.authorize(key)` will write metadata to the local feed authorizing the new
 feed (corresponding to `key`) to be included in the database.
 
-<!-- TODO: update link -->
-[dep-hyperdb]: https://github.com/bnewbold/dat-deps/blob/dep-hyperdb/proposals/0000-hyperdb.md
+`db.authorized(key)` (returning a boolean) indicates whether the given `key` is
+an authorized writer to the hyperdb database.
+
+[dep-hyperdb]: https://github.com/datprotocol/DEPs/blob/master/proposals/0004-hyperdb.md
 
 
 ## Scaling
@@ -131,7 +146,7 @@ scaling issues on their own. More real-world experience and benchmarking is
 needed in this area.
 
 
-# Implementation
+# Implementation Details
 [reference-documentation]: #reference-documentation
 
 The complete protobuf schemas for the hyperdb "Entry" and "InflatedEntry"
@@ -142,9 +157,10 @@ message types (as specified in the hyperdb DEP) are:
 message Entry {
   required string key = 1;
   optional bytes value = 2;
-  required bytes trie = 3;
-  repeated uint64 clock = 4;
-  optional uint64 inflate = 5;
+  optional bool deleted = 3;
+  required bytes trie = 4;
+  repeated uint64 clock = 5;
+  optional uint64 inflate = 6;
 }
 
 message InflatedEntry {
@@ -154,11 +170,12 @@ message InflatedEntry {
 
   required string key = 1;
   optional bytes value = 2;
-  required bytes trie = 3;
-  repeated uint64 clock = 4;
-  optional uint64 inflate = 5;
-  repeated Feed feeds = 6;
-  optional bytes contentFeed = 7;
+  optional bool deleted = 3;
+  required bytes trie = 4;
+  repeated uint64 clock = 5;
+  optional uint64 inflate = 6;
+  repeated Feed feeds = 7;
+  optional bytes contentFeed = 8;
 }
 ```
 
@@ -173,9 +190,9 @@ The fields of interest for multi-writer are:
   InflatedEntry, and only when feeds have changed.
 
 When serialized on disk in a SLEEP directory, the original feed is written
-under `./source/`. If the "local" feed is different from the original feed, it
-is written to `./local/`. All other feeds are written under directories
-prefixed `./peers/<feed-discovery-key>/`.
+under `source/`. If the "local" feed is different from the original feed (aka,
+local is not the "Original Writer"), it is written to `local/`. All other feeds
+are written under directories prefixed `./peers/<feed-discovery-key>/`.
 
 TODO: the above disk format is incorrect?
 
@@ -363,6 +380,10 @@ Answer: `get` always returns nodes (not just values), so context is included. In
 
 What is a reasonable large number of writers to have in a single database?
 Write "Scaling" section.
+
+The javascript hyperdb implementation has a new `deleted` flag and `Header`
+prefix message. These fall under the scope of the `hyperdb` DEP; should they be
+mentioned here?
 
 
 # Changelog
