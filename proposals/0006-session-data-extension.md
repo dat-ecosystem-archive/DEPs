@@ -25,8 +25,8 @@ Applications frequently need to discover which users of the application are onli
 
 This DEP was motivated by the need for a quick solution to these use-cases. It's expected to be a stepping stone to a more sophisticated solution. It outlines an extension message which broadcasts user and session data. The two primary use-cases considered are:
 
- 1. For small apps to be able to discover peers when shared. Examples include a dat-app containing an event invite, or a collaborative document. Scale would be kept small by the fact that the dat-app is only shared with friends. If too many people start showing up, the app could stop authorizing or reading their data.
- 2. For dat-apps like Cabal and Fritter to experiment with discovery policies at a larger scale. Cabal (a chat app) intended to use a HyperDB which any user can "join" as a writer and start posting to. This DEP would make it simple for Cabal to send the local keys of joining users to the owner, to be added to the "channel" HyperDB.
+ 1. For small apps to be able to discover peers' identities when shared. Examples include a dat-app containing an event invite, or a collaborative document, which want to know the identities of visitors in order to receive data from them. Scale would be kept small by the fact that the dat-app is only shared with friends. If too many people start showing up, the app could stop authorizing or reading their data. (Identity data broadcasted via this DEP should not be considered highly trust-worthy.)
+ 2. For dat-apps like Cabal to experiment with authorization policies at a larger scale. Cabal (a chat app) intended to use a HyperDB which any user can "join" as a writer and start posting to. This DEP would make it simple for Cabal to send the local keys of joining users to the owner, to be added to the "channel" HyperDB.
 
 
 # Reference Documentation
