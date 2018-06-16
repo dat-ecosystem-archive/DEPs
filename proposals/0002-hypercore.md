@@ -171,7 +171,7 @@ The nodes in this tree would be calculated as follows:
 10 = h(chunk5)
 ```
 
-In the Hypercore feed, we only want one active root. Therefore, when there are multiple roots we hash all the roots together again. At most there will be `log2(number of data blocks)`.
+In the Hypercore feed, we only want one active root. Therefore, when there are multiple roots we hash all the roots together again. At most there will be `log2(number of data blocks)` root hashes to combine.
 
 ```
 root = h(9 + 3)
