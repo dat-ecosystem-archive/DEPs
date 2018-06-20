@@ -46,6 +46,8 @@ The `contentType` string should provide a valid MIME type. If none is specified,
 
 The client may respond to the message by emitting an event, so that it may be handled by the client's application logic. No acknowledgment of receipt will be provided (no "ACK").
 
+It's suggested that an encoded `EphemeralMessage` should be no larger than 2kb, to avoid creating too much work for the receiving peer to handle.
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -58,6 +60,7 @@ The client may respond to the message by emitting an event, so that it may be ha
 # Changelog
 [changelog]: #changelog
 
+- 2018-06-20: Add a size-limit suggestion
 - 2018-06-10: Change the payload encoding to protobuf and provide a more flexible content-type field.
 - 2018-06-10: Expand on the motivation of this DEP
 - 2018-06-10: Change the message identifier to `'ephemeral'`
