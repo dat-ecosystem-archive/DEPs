@@ -9,7 +9,7 @@ Status: Undefined (as of 2018-06-26)
 
 Github PR: (add HTTPS link here after PR is opened)
 
-Authors: [Paul Frazee](https://github.com/pfrazee)
+Authors: [Paul Frazee](https://github.com/pfrazee), [Mathias Buus](https://github.com/mafintosh)
 
 
 # Summary
