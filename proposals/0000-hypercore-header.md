@@ -34,30 +34,29 @@ The "header" is the first entry in a hypercore. It includes a `type` and an opti
 
 A program that is reading a hypercore will examine the `type` to determine how to process the hypercore.
 
-```js
-function loadCorrectStructure (hypercore, cb) {
-  readHeader(hypercore, (err, header) => {
-    if (err) return cb(err)
+```
+function loadCorrectStructure (hypercore) {
+  
+  var header = parseHypercoreHeader(hypercore.readEntry(0))
 
-    if (!header) {
-      // no header present - treat as a hypercore
-      return cb(null, hypercore)
-    }
+  if (!header) {
+    // no header present - treat as a hypercore
+    return hypercore
+  }
 
-    switch (header.type) {
-      case 'hyperdrive':
-        return cb(null, createHyperdriveV1(hypercore, header))
-      case 'hyperdrive-v2':
-        return cb(null, createHyperdriveV2(hypercore, header))
-      case 'hyperdb':
-        return cb(null, createHyperdbV1(hypercore, header))
-      case '':
-        return cb(null, hypercore) // no structure, treat as a hypercore
-      // ...
-      default:
-        return cb(new Error('Unsupported: ' + header.type))
-    }
-  })
+  switch (header.type) {
+    case 'hyperdrive':
+      return new HyperdriveV1(hypercore, header)
+    case 'hyperdrive-v2':
+      return new HyperdriveV2(hypercore, header)
+    case 'hyperdb':
+      return new HyperdbV1(hypercore, header)
+    // ...
+    default:
+      // unknown type - treat as a hypercore
+      return hypercore
+  }
+
 }
 ```
 
