@@ -79,7 +79,7 @@ message HypercoreHeader {
 }
 ```
 
-Data structures should not add additional fields to the `HypercoreHeader`. They should put any additional data into the `extension`. This is easy to do with protobuf's nested messages. For example:
+Data structures should not add additional fields to the `HypercoreHeader`. Any additional fields should be ignored. Data-structure-specific data can be stored in the `extension`. This is easy to do with protobuf's nested messages. For example:
 
 ```protobuf
 message MyCustomHeader {
