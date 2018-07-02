@@ -49,6 +49,18 @@ The client may respond to the message by emitting an event, so that it may be ha
 It's suggested that an encoded `EphemeralMessage` should be no larger than 2kb, to avoid creating too much work for the receiving peer to handle.
 
 
+# Privacy, security, and reliability
+[privacy-security-and-reliability]: #privacy-security-and-reliability
+
+Users of ephemeral messages should be conscious of the privacy, security, and reliability properties of the channel. Ephemeral messages are designed to be a minimal stopgap solution while better solutions are developed. This "minimal design" is reflected by the limited privacy, security, and reliability.
+
+At time of writing, the Dat messaging channel is encrypted using the public key of the first hypercore to be exchanged over the channel. As a result, all traffic can be decrypted and/or modified by an intermediary which possesses the public key. For typical hypercore messages, the ability to modify the messages is a non-issue because all hypercore data is authenticated. Ephemeral messages however have no authentication, and may be modified or monitored by an intermediary.
+
+Applications using the ephemeral message should not assume any privacy, nor should they trust that a peer is "who they say they are."
+
+Applications should also not assume connectivity will occur between all peers who have "joined the swarm" for a hypercore. There are many factors which may cause a peer not to connect: failed NAT traversal, the client running out of available sockets, or even the intentional blocking of a peer by the discovery network.
+
+
 # Drawbacks
 [drawbacks]: #drawbacks
 
@@ -60,6 +72,7 @@ It's suggested that an encoded `EphemeralMessage` should be no larger than 2kb, 
 # Changelog
 [changelog]: #changelog
 
+- 2018-07-02: Add "Privacy, security, and reliability" section
 - 2018-06-20: Add a size-limit suggestion
 - 2018-06-10: Change the payload encoding to protobuf and provide a more flexible content-type field.
 - 2018-06-10: Expand on the motivation of this DEP
