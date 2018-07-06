@@ -30,9 +30,9 @@ At time of writing, Dat's standard data structures are being expanded upon (hype
 # Usage Documentation
 [usage-documentation]: #usage-documentation
 
-The "header" is the first entry in a hypercore. It includes a `type` and an optional `extension` which can contain data-structure-specific data.
+The "header" is the first entry in a hypercore. It includes a `dataStructureType` and an optional `extension` which can contain data-structure-specific data.
 
-A program that is reading a hypercore will examine the `type` to determine how to process the hypercore.
+A program that is reading a hypercore will examine the `dataStructureType` to determine how to process the hypercore.
 
 ```
 function loadCorrectStructure (hypercore) {
@@ -44,7 +44,7 @@ function loadCorrectStructure (hypercore) {
     return hypercore
   }
 
-  switch (header.type) {
+  switch (header.dataStructureType) {
     case 'hyperdrive':
       return new HyperdriveV1(hypercore, header)
     case 'hyperdrive-v2':
@@ -60,7 +60,7 @@ function loadCorrectStructure (hypercore) {
 }
 ```
 
-The `type` string should be unique to the data structure (refer to existing DEPs to avoid conflicts). When a breaking change is made to the data-structure, it should be given a new `type` string. For example, the `"hyperdrive"` type string will be updated to `"hyperdrive-v2"` for its second version.
+The `dataStructureType` string should be unique to the data structure (refer to existing DEPs to avoid conflicts). When a breaking change is made to the data-structure, it should be given a new `dataStructureType` string. For example, the `"hyperdrive"` type string might be updated to `"hyperdrive-v2"` for its second version. (Note: the actual type strings will be specified in the DEPs for the individual data structures.)
 
 The `header.extension` is an optional blob of bytes. It can be used by the data structure to store custom data. In `"hyperdrive"` (v1) it is used to specify the key of the content hypercore. It is also valid to encode a protobuf message into the extension field, and therefore it's simple to add additional fields.
 
@@ -74,7 +74,7 @@ The header message has the following protobuf schema:
 
 ```protobuf
 message HypercoreHeader {
-  required string type = 1;
+  required string dataStructureType = 1;
   optional bytes extension = 2;
 }
 ```
@@ -87,7 +87,7 @@ message MyCustomHeader {
     required string foo = 1;
     required uint64 bar = 2;
   }
-  required string type = 1;
+  required string dataStructureType = 1;
   optional AdditionalData extension = 2;
 }
 ```
