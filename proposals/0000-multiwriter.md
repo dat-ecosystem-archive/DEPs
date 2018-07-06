@@ -98,7 +98,8 @@ perspective of that writer at the time they created the entry, in the form of
 "clock" version pointers. This metadata (a "[vector clock][vc]") can be used by
 other writers to resolve (or at least identify) conflicting content in the
 database. The technical term for this type of system is a "Conflict-free
-replicated data type" ([CRDT][crdt]).
+replicated data type" ([CRDT][crdt]), and specifically an "Operation-based" (as
+opposed to "State-based") CRDT.
 
 [vc]: https://en.wikipedia.org/wiki/Vector_clock
 [crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type
@@ -465,9 +466,6 @@ for being more difficult to understand and implement.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
-
-What is the technical term for the specific CRDT we are using?
-"Operation-based" or "State-based"?
 
 What is the actual on-disk layout (folder structure), if not what is documented
 here?
