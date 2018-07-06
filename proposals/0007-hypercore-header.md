@@ -1,13 +1,13 @@
 
-Title: **DEP-0000: Hypercore Header**
+Title: **DEP-0007: Hypercore Header**
 
-Short Name: `0000-hypercore-header`
+Short Name: `0007-hypercore-header`
 
 Type: Standard
 
-Status: Undefined (as of 2018-06-26)
+Status: Draft (as of 2018-07-06)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: [#34](https://github.com/datprotocol/DEPs/pull/34)
 
 Authors: [Paul Frazee](https://github.com/pfrazee), [Mathias Buus](https://github.com/mafintosh)
 
