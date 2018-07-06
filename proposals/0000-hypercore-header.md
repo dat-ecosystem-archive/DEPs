@@ -23,7 +23,7 @@ The Dat protocol supports a variety of data structures on top of the hypercore a
 
 At time of writing, Dat's standard data structures are being expanded upon (hyperdb) while existing data structures are being updated with breaking changes (hyperdrive). In order for these changes to be deployed smoothly to the network, it's important that the following needs be met:
 
- 1. Programs should correctly identify the data structure type and version within a hypercore. This will enable the program to use the correct handling code (eg hyperdb, hyperdrive-v1, hyperdrive-v2).
+ 1. Programs should correctly identify the data structure type and version within a hypercore. This will enable the program to use the correct handling code (eg hyperdb, hyperdrive, hyperdrive-v2).
  2. Programs should abort processing a hypercore if they lack support for the type or version of the data structure.
 
 
