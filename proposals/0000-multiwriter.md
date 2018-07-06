@@ -112,12 +112,15 @@ A "node" is a data structure representing a database entry, including the
 `key`, `value`, and feed that the entry is commited to.
 
 `db.get(key)` (as described in the [hyperdb DEP][dep-hyperdb])
-returns an array of nodes. If it is unambiguous what the consistent state of a key is,
-the array will have only that one value. If there is a conflict (ambiguity),
-multiple nodes will be returned. If a key has been deleted from the database, a
-node with the `deleted` flag will be returned; note that such "tombstone" nodes
-can still have a `value` field, which may contain application-specific metadata
-(such as a timestamp).
+returns an array of nodes. If it is unambiguous what the consistent state of a
+key is, the array will have only that one value. If there is a conflict
+(ambiguity), multiple nodes will be returned. If a key has unambiguously been
+removed from the database, a "null" or empty datatype is returned. If one
+branch of a conflict has a deletion (but at least one of the others does not),
+a node with the `deleted` flag will be returned; note that such "tombstone"
+nodes can still have a `value` field, which may contain application-specific
+metadata (such as a self-reported timestamp), which may help resolve the
+conflict.
 
 If multiple nodes are returned from a `get`, the writer should attempt to merge
 the values (or chose one over the other) and write the result to the database
@@ -470,9 +473,10 @@ for being more difficult to understand and implement.
 What is the actual on-disk layout (folder structure), if not what is documented
 here?
 
-Couldn't the local feed's sequence number be skipped from vector clocks,
-because it's implied by the sequence number of the hypercore entry itself? Same
-with the key in the feed list (for inflated entries).
+The local feed's sequence number could skipped from vector clocks, because it's
+implied by the sequence number of the hypercore entry itself. Same with the key
+in the feed list (for inflated entries). In both cases, the redundant data is
+retained for simplicity.
 
 If there are multiple heads, but they all return the same `value` for a `get()`
 operation, how is it decided which `node` will be returned? AKA, values are the
