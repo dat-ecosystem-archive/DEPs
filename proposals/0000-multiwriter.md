@@ -202,10 +202,15 @@ The fields of interest for multi-writer are:
   self-reference to the current (local) Feed's key, always as the first
   element.
 
-When serialized on disk in a SLEEP directory, the original feed is written
-under `source/`. If the "local" feed is different from the original feed (aka,
-local is not the "Original Writer"), it is written to `local/`. All other feeds
-are written under directories prefixed `peers/<feed-discovery-key>/`.
+When serialized on disk in a SLEEP directory:
+
+- `source/`: the original feed, as created or cloned by this writer
+- `local/`: if "local" feed is different from "source", it goes here
+- `peers/<discover-key>/`: all other writers' feed go under this directory (the
+  discovery key is lower-case hex-encoded)
+- `content/<discovery-key>/`: if a higher-level protocol is being used that
+  uses multiple linked hypercore feeds (eg, hyperdrive), the linked "content"
+  feeds all go under this directory
 
 ## Feeds and Vector Clocks
 
