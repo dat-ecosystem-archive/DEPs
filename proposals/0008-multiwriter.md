@@ -1,11 +1,11 @@
 
-Title: **DEP-0000: Multi-Writer**
+Title: **DEP-0008: Multi-Writer**
 
-Short Name: `0000-multiwriter`
+Short Name: `0008-multiwriter`
 
 Type: Standard
 
-Status: Undefined (as of 2018-03-XX)
+Status: Draft (as of 2018-07-06)
 
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/10)
 
@@ -504,6 +504,9 @@ Jim Pick (@jimpick) has been an active contributor working out multi-writer deta
 
 - 2017-12-06: @noffle publishes `ARCHITECTURE.md` overview in the
   [hyperdb github repo][arch_md]
-- 2018-06-XX: First partial draft submitted for review
+- 2018-05-02: First round of public review
+- 2018-05-23: hyperdb 3.0.0 node.js implementation released
+- 2018-06-10: Second draft submitted for review
+- 2018-07-06: Accepted with Draft status (after edits)
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
