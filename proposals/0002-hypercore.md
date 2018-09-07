@@ -283,6 +283,18 @@ function root_hash (roots) {
 
   return blake2b(buffers)
 }
+
+function sign (roots, secretKey) {
+  var hash = root_hash(roots)
+  
+  return ed25519.detached.sign(hash, secretKey)
+}
+
+function verify (roots, signature, publicKey) {
+  var hash = root_hash(roots)
+  
+  return ed25519.detached.verify(signature, publicKey)
+}
 ```
 
 # Parameters
