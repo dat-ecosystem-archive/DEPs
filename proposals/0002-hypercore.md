@@ -290,9 +290,7 @@ function sign (roots, secretKey) {
   return ed25519.detached.sign(hash, secretKey)
 }
 
-function verify (roots, signature, publicKey) {
-  var hash = root_hash(roots)
-  
+function verify (hash, signature, publicKey) {  
   return ed25519.detached.verify(signature, publicKey)
 }
 ```
