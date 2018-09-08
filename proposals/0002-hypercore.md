@@ -291,7 +291,7 @@ function sign (roots, secretKey) {
 }
 
 function verify (hash, signature, publicKey) {  
-  return ed25519.detached.verify(signature, publicKey)
+  return ed25519.detached.verify(hash, signature, publicKey)
 }
 ```
 
