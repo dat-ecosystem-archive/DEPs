@@ -52,7 +52,7 @@ this abstraction layer.
 
 *This section describes Hyperdb's interface and behavior in the abstract for
 application programmers. It is not intended to be exact documentation of any
-particular implementation (including the reference Javascript module).*
+particular implementation (including the reference JavaScript module).*
 
 Hyperdb is structured to be used much like a traditional hierarchical
 filesystem. A value can be written and read at locations like `/foo/bar/baz`,
@@ -82,7 +82,7 @@ equivalent. A key can be both a "path segment" and key at the same time; e.g.,
 
 **Values** can be any binary blob, including empty (of zero length). For
 example, values could be UTF-8 encoded strings, JSON encoded objects, protobuf
-messages, or a raw `uint64` integer (of either endian-ness). Length is the only
+messages, or a raw `uint64` integer (of either endianness). Length is the only
 form of type or metadata stored about the value; deserialization and validation
 are left to library and application developers.
 
@@ -149,7 +149,7 @@ The Entry protobuf message schema is:
       message Feed {
         required bytes key = 1;
       }
-    
+
       required string key = 1;
       optional bytes value = 2;
       required bytes trie = 3;
@@ -159,9 +159,8 @@ The Entry protobuf message schema is:
       optional bytes contentFeed = 7;
     }
 
-Some fields are are specific to the multi-writer features described in their
-own DEP and mentioned only partially here. The fields common to both message
-types are:
+Some fields are specific to the multi-writer features described in their own DEP
+and mentioned only partially here. The fields common to both message types are:
 
 - `key`: UTF-8 key that this node describes. Leading and trailing forward
   slashes (`/`) are always stripped before storing in protobuf.
@@ -194,7 +193,7 @@ must be defined, so the new message can be referred to via `inflated`. In this
 case the entry is refereed to as an "inflated entry".
 
 
-## Path Hashing 
+## Path Hashing
 [path_hashing]: #path_hashing
 
 Every key path has component-wise fixed-size hash representation that is used
@@ -202,7 +201,7 @@ by the trie. The concatenation of all path hashes yields a "path hash array"
 for the entire key.  Note that analogously to a hash map data structure, there
 can be more than one key (string) with the same key hash in the same database
 with no problems: the hash points to a linked-list "bucket" of Entries, which
-can be iterated over linearly to find the correct value. 
+can be iterated over linearly to find the correct value.
 
 The path hash is represented by an array of bytes. Elements are 2-bit encoded
 (values 0, 1, 2, 3), except for an optional terminating element which has value
@@ -218,7 +217,7 @@ algorithm is included in the libsodium library in the form of the
 `crypto_shorthash()` function. A 16-byte "secret" key is required; for this use
 case we use all zeros.
 
-When converting the 8-bytehash to an array of 2-bit bytes, the ordering is
+When converting the 8-byte hash to an array of 2-bit bytes, the ordering is
 proceed byte-by-byte, and for each take the two lowest-value bits (aka, `hash &
 0x3`) as byte index `0`, the next two bits (aka, `hash & 0xC`) as byte index
 `1`, etc. When concatenating path hashes into a longer array, the first
@@ -502,7 +501,7 @@ Now we `db.put('/a/c', 'hello')` and expect a second Entry:
 { key: 'a/c',
   value: 'hello',
   trie:
-   [ , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , 
+   [ , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
      , , { element: 2, feed: 0, index: 0 } ] }
 ```
 
@@ -600,7 +599,7 @@ is:
 ```
 { key: 'a/c',
   value: ,
-  trie: [ , { val: 1, feed: 0, index: 2 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , 
+  trie: [ , { val: 1, feed: 0, index: 2 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
           , , { val: 1, feed: 0, index: 0 } ] }
 ```
 
@@ -747,7 +746,7 @@ concerns are explicitly out of scope for this DEP.
 [changelog]: #changelog
 
 As of March 2018, Mathias Buus (@mafintosh) is leading development of a hyperdb
-nodejs module on [github](https://github.com/mafintosh/hyperdb), which is the
+Node.js module on [github](https://github.com/mafintosh/hyperdb), which is the
 basis for this DEP.
 
 - 2017-12-06: Stephen Whitmore (@noffle) publishes `ARCHITECTURE.md` overview
