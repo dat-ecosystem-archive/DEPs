@@ -5,7 +5,7 @@ Short Name: `0001-dep-process`
 
 Type: Process
 
-Status: Draft (as of 2018-XX-YY)
+Status: Draft (as of 2018-01-30)
 
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/2)
 
@@ -74,9 +74,9 @@ new DEP is:
 
 1. Use git to fork the [datprotocol/deps](https://github.com/datprotocol/deps)
    repository
-1. Copy `0000-template.md` to `proposals/0000-my-proposal.md` (don't chose the
+1. Copy `0000-template.md` to `proposals/0000-my-proposal.md` (don't choose the
    "next" number, use zero; `my-proposal` should be a stub identifier for the
-   proposal)
+   proposal.)
 1. Fill in the DEP template. All proposals should have a Type and Status (see
    below for details). Feel free to tweak or expand the structure (headers,
    content) of the document to fit your needs, but your proposal should be
@@ -124,7 +124,7 @@ new DEP is:
 DEPs should have a type:
 
 * **Standard** for technical changes to the protocol, on-disk formats, or
-  public APIs. These are intended to be *proscriptive*, and to clearly
+  public APIs. These are intended to be *prescriptive*, and to clearly
   delineate which features and behaviors are mandatory or optional.
 * **Process** for formalizing community processes or other (technical or
   non-technical) decisions. For example, a security vulnerability reporting
@@ -171,11 +171,11 @@ explicitly consider and note impacts on:
 
 * Privacy and User Rights. Consider reading IETF [RFC 6973] ("Privacy
   Considerations for Internet Protocols") and [RFC 8280] ("Research into Human
-  Rights Protocol Considerations")
+  Rights Protocol Considerations".)
 * Backwards compatibility of on-disk archives and older network clients. If a
   backwards-incompatible change is proposed, a migration plan should be
-  sketched out in the proposal
-* Security
+  sketched out in the proposal.
+* Security.
 
 [RFC-6973]: https://tools.ietf.org/html/rfc6973
 [RFC-8280]: https://tools.ietf.org/html/rfc8280
@@ -191,12 +191,12 @@ actually be adopted and put to beneficial use. An editor may screen proposals
 before passing on to the group for review.
 
 For Standards and Process DEPs, Draft proposals should be specific enough that
-they can be prototyped and experimented with (eg, in a pilot program or test
+they can be prototyped and experimented with (e.g. in a pilot program or test
 network), but it isn't expected that all details have been worked out. Working
 code is helpful but not required.
 
 For a Draft to migrate to Active, there is an expectation that the proposal has
-been demonstrated (eg, in working code, though not necessarily in "official"
+been demonstrated (e.g. in working code, though not necessarily in "official"
 libraries yet), that the proposal will be the "new normal" and expected
 behavior going forward, and that the chance of unforeseen issues arising during
 complete adoption is low.
