@@ -59,7 +59,7 @@ The split handler must be constructed in such a way that all peers will come to 
 # Rationale and alternatives
 [alternatives]: #alternatives
 
-- Previously we've discussed a "major version pointer" which made it possible possible to recover from a split by publishing a new history ([discussion](https://github.com/datprotocol/DEPs/issues/31)). The "major version pointer" is a less efficient solution as it requires a wholly new history to recover, had its own edge-cases which were difficult to recover from, and was rejected for being too complex.
+- Previously we've discussed a "major version pointer" which made it possible to recover from a split by publishing a new history ([discussion](https://github.com/datprotocol/DEPs/issues/31)). The "major version pointer" is a less efficient solution as it requires a wholly new history to recover, had its own edge-cases which were difficult to recover from, and was rejected for being too complex.
 
 
 # Unresolved questions
