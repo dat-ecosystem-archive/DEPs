@@ -131,11 +131,16 @@ An example pseudo-code session working with a database might be:
 [reference-documentation]: #reference-documentation
 
 A hyperdb hypercore feed typically consists of a sequence of protobuf-encoded
-messages of "Entry" or "InflatedEntry" type. Higher-level protocols may make
-exception to this, for example by prepending an application-specific metadata
-message as the first entry in the feed. There is sometimes a second "content"
-feed associated with the primary hyperdb key/value feed, to store data that
-does not fit in the (limited) `value` size constraint.
+messages of "Entry" or "InflatedEntry" type. A special "protocol header" entry
+should be the first entry in the feed, as specified in DEP `0007: Hypercore
+Header`, with protocol string `hyperdb`. Hyperdb itself does not specify the
+content of the optional header `extension` field, leaving that to higher-level
+protocols.
+
+There is sometimes a second "content" feed associated with the primary hyperdb
+key/value feed, to store data that does not fit in the (limited) `value` size
+constraint. The optional `contentFeed` field described below can be used to
+indicate such a feed.
 
 The sequence of entries includes an incremental index: the most recent entry in
 the feed contains metadata pointers that can be followed to efficiently look up
@@ -189,7 +194,7 @@ to both message types are:
   cases.
 - `inflate`: a "pointer" (reference to a feed index number) to the most recent
   `InflatedEntry` in the feed (that has the `feeds` and `contentFeed` fields
-  set). Not set in the first entry (an `InflatedEntry`) in the feed.
+  set). Not set in the first `InflatedEntry` in the feed.
 - `feeds`: reserved for use with `multi-writer`. The safe single-writer value is
   to use the current feed's hypercore public key.
 - `contentFeed`: for applications which require a parallel "content" hypercore
@@ -486,7 +491,8 @@ The overall bytestring would be:
 ## Simple Put and Get
 
 Starting with an empty hyperdb `db`, if we `db.put('/a/b', '24')` we expect to
-see a single `Entry` and index 0:
+see a single `Entry` and index 1 (following the DEP-0007 hypercode header at
+index 0):
 
 ```
 { key: 'a/b',
@@ -496,7 +502,7 @@ see a single `Entry` and index 0:
    [ ] }
 ```
 
-For reference, the path hash array for this key (index 0) is:
+For reference, the path hash array for this key (index 1) is:
 
 ```
 [ 1, 2, 0, 1, 2, 0, 2, 2, 3, 0, 1, 2, 1, 3, 0, 3, 0, 0, 2, 1, 0, 2, 0, 0, 2, 0, 0, 3, 2, 1, 1, 2,
@@ -506,7 +512,7 @@ For reference, the path hash array for this key (index 0) is:
 
 Note that the first 64 bytes in path match those of the `/a/b/c` example from
 the [path hashing][path_hash] section, because the first two path components
-are the same. Since this is the first entry, the entry index is 0.
+are the same. Since this is the second entry, the entry index is 1.
 
 Now we `db.put('/a/c', 'hello')` and expect a second Entry:
 
@@ -516,10 +522,10 @@ Now we `db.put('/a/c', 'hello')` and expect a second Entry:
   deleted: ,
   trie:
    [ , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
-     , , { element: 2, feed: 0, index: 0 } ] }
+     , , { element: 2, feed: 0, index: 1 } ] }
 ```
 
-The path hash array for this key (index 1) is:
+The path hash array for this key (index 2) is:
 
 ```
 [ 1, 2, 0, 1, 2, 0, 2, 2, 3, 0, 1, 2, 1, 3, 0, 3, 0, 0, 2, 1, 0, 2, 0, 0, 2, 0, 0, 3, 2, 1, 1, 2,
@@ -543,10 +549,10 @@ Next we insert a third node with `db.put('/x/y', 'other')`, and get a third Entr
   value: 'other',
   deleted: ,
   trie:
-   [ , { val: 1, feed: 0, index: 1 } ],
+   [ , { val: 1, feed: 0, index: 2 } ],
 ```
 
-The path hash array for this key (index 2) is:
+The path hash array for this key (index 3) is:
 
 ```
 [ 1, 1, 0, 0, 3, 1, 2, 3, 3, 1, 1, 1, 2, 2, 1, 1, 1, 0, 2, 3, 3, 0, 1, 2, 1, 1, 2, 3, 0, 0, 2, 1,
@@ -557,12 +563,12 @@ The path hash array for this key (index 2) is:
 Consider the lookup-up process for `db.get('/a/b')` (which we expect to
 successfully return `'24'`, as written in the first Entry). First we calculate
 the path for the key `a/b`, which will be the same as the first Entry. Then we
-take the "latest" Entry, with entry index 2. We compare the path hash arrays,
+take the "latest" Entry, with entry index 3. We compare the path hash arrays,
 starting at the first element, and find the first difference at index 1 (`1 ==
 1`, then `1 != 2`). We look at index 1 in the current Entry's `trie` and find a
-pointer to entry index 1, so we fetch that Entry and recurse. Comparing path
+pointer to entry index 2, so we fetch that Entry and recurse. Comparing path
 hash arrays, we now get all the way to index 34 before there is a difference.
-We again look in the `trie`, find a pointer to entry index 0, and fetch the
+We again look in the `trie`, find a pointer to entry index 1, and fetch the
 first Entry and recurse. Now the path elements match exactly; we have found the
 Entry we are looking for, and it has an existent `value`, so we return the
 `value`.
@@ -576,8 +582,8 @@ to return with "key not found". We calculate the path hash array for this key:
   4 ]
 ```
 
-Similar to the first lookup, we start with entry index 2 and follow the pointer to
-entry index 1. This time, when we compare path hash arrays, the first differing
+Similar to the first lookup, we start with entry index 3 and follow the pointer to
+entry index 2. This time, when we compare path hash arrays, the first differing
 entry is at array index `32`. There is no `trie` entry at this index, which
 tells us that the key does not exist in the database.
 
@@ -594,7 +600,7 @@ We generate a path hash array for the key `/a`, without the terminating symbol
 ```
 
 Using the same process as a `get()` lookup, we find the first Entry that
-entirely matches this prefix, which will be entry index 1. If we had failed to
+entirely matches this prefix, which will be entry index 2. If we had failed to
 find any Entry with a complete prefix match, then we would return an empty list
 of matching keys.
 
@@ -608,14 +614,14 @@ Continuing with the state of the database above, we call `db.delete('/a/c')` to
 remove that key from the database.
 
 The process is almost entirely the same as inserting a new Entry at that key,
-except that the `deleted` field is set. The new Entry (at entry index 3) is:
+except that the `deleted` field is set. The new Entry (at entry index 4) is:
 
 ```
 { key: 'a/c',
   value: ,
   deleted: true,
-  trie: [ , { val: 1, feed: 0, index: 2 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
-          , , { val: 1, feed: 0, index: 0 } ] }
+  trie: [ , { val: 1, feed: 0, index: 3 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
+          , , { val: 1, feed: 0, index: 1 } ] }
 ```
 
 The path hash array for this Entry (key) is:
@@ -763,5 +769,6 @@ basis for this DEP.
 - 2018-03-15: Hyperdb v3.0.0 is released
 - 2018-04-18: This DEP submitted for Draft review.
 - 2018-05-06: Merged as Draft after WG approval.
+- 2018-11-17: Updates for deletion and "header" message
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
