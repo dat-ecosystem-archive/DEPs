@@ -131,11 +131,11 @@ An example pseudo-code session working with a database might be:
 [reference-documentation]: #reference-documentation
 
 A hyperdb hypercore feed typically consists of a sequence of protobuf-encoded
-messages of "Entry" type. Higher-level protocols may make exception to this,
-for example by prepending an application-specific metadata message as the first
-entry in the feed. There is sometimes a second "content" feed associated with
-the primary hyperdb key/value feed, to store data that does not fit in the
-(limited) `value` size constraint.
+messages of "Entry" or "InflatedEntry" type. Higher-level protocols may make
+exception to this, for example by prepending an application-specific metadata
+message as the first entry in the feed. There is sometimes a second "content"
+feed associated with the primary hyperdb key/value feed, to store data that
+does not fit in the (limited) `value` size constraint.
 
 The sequence of entries includes an incremental index: the most recent entry in
 the feed contains metadata pointers that can be followed to efficiently look up
@@ -143,38 +143,53 @@ any key in the database without needing to linear scan the entire history or
 generate an independent index data structure. Implementations are, of course,
 free to maintain their own index if they prefer.
 
-The Entry protobuf message schema is:
+The "Entry" and "InflatedEntry" protobuf message schemas are:
 
     message Entry {
+      required string key = 1;
+      optional bytes value = 2;
+      optional bool deleted = 3;
+      required bytes trie = 4;
+      repeated uint64 clock = 5;
+      optional uint64 inflate = 6;
+    }
+
+    message InflatedEntry {
       message Feed {
         required bytes key = 1;
       }
 
       required string key = 1;
       optional bytes value = 2;
-      required bytes trie = 3;
-      repeated uint64 clock = 4;
-      optional uint64 inflate = 5;
-      repeated Feed feeds = 6;
-      optional bytes contentFeed = 7;
+      optional bool deleted = 3;
+      required bytes trie = 4;
+      repeated uint64 clock = 5;
+      optional uint64 inflate = 6;
+      repeated Feed feeds = 7;
+      optional bytes contentFeed = 8;
     }
 
-Some fields are specific to the multi-writer features described in their own DEP
-and mentioned only partially here. The fields common to both message types are:
+Some fields are specific to the multi-writer features described in their own
+DEP (`0008: Multi-Writer`) and mentioned only partially here. The fields common
+to both message types are:
 
 - `key`: UTF-8 key that this node describes. Leading and trailing forward
   slashes (`/`) are always stripped before storing in protobuf.
-- `value`: arbitrary byte array. A non-existent `value` entry indicates that
-  this Entry indicates a deletion of the key; this is distinct from specifying
-  an empty (zero-length) value.
+- `value`: arbitrary byte array. It is valid to set an empty (zero-length)
+  value.
+- `deleted`: indicates that this is a "tombstone" entry, recording a deletion
+  of a key. It is recommended (but not required) to keep this value undefined
+  for `put` entries instead of setting to `false` explicitly. Note that a deletion
+  entry can have a non-null `value`, which could be used to store user-defined
+  metadata about the deletion.
 - `trie`: a structured array of pointers to other Entry entries in the feed,
   used for navigating the tree of keys.
 - `clock`: reserved for use in the forthcoming `multi-writer` standard. An
   empty list is the safe (and expected) value for `clock` in single-writer use
   cases.
 - `inflate`: a "pointer" (reference to a feed index number) to the most recent
-  entry in the feed that has the optional `feeds` and `contentFeed` fields set.
-  Not defined if `feeds` and `contentFeed` are defined in the same message.
+  `InflatedEntry` in the feed (that has the `feeds` and `contentFeed` fields
+  set). Not set in the first entry (an `InflatedEntry`) in the feed.
 - `feeds`: reserved for use with `multi-writer`. The safe single-writer value is
   to use the current feed's hypercore public key.
 - `contentFeed`: for applications which require a parallel "content" hypercore
@@ -183,14 +198,11 @@ and mentioned only partially here. The fields common to both message types are:
   of the feed (aka, it is not mutable).
 
 For the case of a single-writer feed, not using multi-writer features, it is
-sufficient to write a single Entry message as the first entry in the hypercore
-feed, with `feeds` containing a single entry (a pointer to the current feed
-itself), and `contentFeed` optionally set to a pointer to a paired content
-feed.
-
-If *either* `feeds` *or* `contentFeed` are defined in an entry, *both* fields
-must be defined, so the new message can be referred to via `inflated`. In this
-case the entry is refereed to as an "inflated entry".
+sufficient to write a single InflatedEntry message in the hypercore feed, with
+`feeds` containing a single entry (a pointer to the current feed itself), and
+`contentFeed` optionally set to a pointer to a paired content feed. Following
+that, the `Entry` type can be used for all other messages, with `inflate`
+pointing back to the single `InflatedEntry` message.
 
 
 ## Path Hashing
@@ -333,9 +345,9 @@ To lookup a key in the database, the recipe is to:
 1. Calculate the path hash array for the key you are looking for.
 2. Select the most-recent ("latest") Entry for the feed.
 3. Compare path hash arrays. If the paths match exactly, compare keys; they
-   match, you have found the you were looking for! Check whether the `value` is
-   defined or not; if not, this Entry represents that the key was deleted from
-   the database.
+   match, you have found the you were looking for! Check whether the `deleted`
+   flag is set; if so, this Entry represents that the key was deleted from the
+   database.
 4. If the paths match, but not the keys, look for a pointer in the last `trie`
    array index, and iterate from step #3 with the new Entry.
 5. If the paths don't entirely match, find the first index at which the two
@@ -371,9 +383,9 @@ Similarly, to write a key to the database:
    pointer to select the next `Entry`. Recursively repeat this process from step
    #3.
 
-To delete a value, follow the same procedure as adding a key, but write the
-`Entry` without a `value` (in protobuf, this is distinct from having a `value`
-field with zero bytes). Deletion nodes may persist in the database forever.
+To delete a value, follow the same procedure as adding a key, and write an
+`Entry` with the `deleted` flag set. Deletion nodes will persist in the
+database forever.
 
 
 ## Binary Trie Encoding
@@ -479,6 +491,7 @@ see a single `Entry` and index 0:
 ```
 { key: 'a/b',
   value: '24',
+  deleted: ,
   trie:
    [ ] }
 ```
@@ -500,6 +513,7 @@ Now we `db.put('/a/c', 'hello')` and expect a second Entry:
 ```
 { key: 'a/c',
   value: 'hello',
+  deleted: ,
   trie:
    [ , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
      , , { element: 2, feed: 0, index: 0 } ] }
@@ -527,6 +541,7 @@ Next we insert a third node with `db.put('/x/y', 'other')`, and get a third Entr
 ```
 { key: 'x/y',
   value: 'other',
+  deleted: ,
   trie:
    [ , { val: 1, feed: 0, index: 1 } ],
 ```
@@ -593,12 +608,12 @@ Continuing with the state of the database above, we call `db.delete('/a/c')` to
 remove that key from the database.
 
 The process is almost entirely the same as inserting a new Entry at that key,
-except that the `value` field is undefined. The new Entry (at entry index 3)
-is:
+except that the `deleted` field is set. The new Entry (at entry index 3) is:
 
 ```
 { key: 'a/c',
   value: ,
+  deleted: true,
   trie: [ , { val: 1, feed: 0, index: 2 }, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,
           , , { val: 1, feed: 0, index: 0 } ] }
 ```
@@ -723,13 +738,6 @@ Need to think through deletion process with respect to listing a path prefix;
 will previously deleted nodes be occluded, or potentially show up in list
 results? Should be reviewed (by a non-author of this document) before accepted
 as a Draft.
-
-Can the deletion process (currently leaving "tombstone" entries in the `trie`
-forever) be improved, such that these entries don't need to be iterated over?
-mafintosh mentioned this might be in the works. Does this DEP need to "leave
-room" for those changes, or should we call out the potential for future change?
-Probably not, should only describe existing solutions. This can be resolved
-after Draft.
 
 There are implied "reasonable" limits on the size (in bytes) of both keys and
 values, but they are not formally specified. Protobuf messages have a hard
