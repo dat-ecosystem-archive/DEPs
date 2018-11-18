@@ -419,7 +419,31 @@ ALICE: closes connection
 
 # Privacy and Security Considerations
 
-TODO:
+All security and privacy guarantees of this protocol implicitly depend on the soundness of the underlying cryptographic primitives, algorithms, and implementations, which include BLAKE2b and XSalsa20.
+
+A connecting peer, or any observer able to decrypt traffic, may be able to infer the following from protocol traffic:
+
+- what subset of content the local peer already has access to (via Have message)
+- what subset of content the local peer is interested in (via Want and Request messages)
+
+A "persistent" (all-seeing) observer can infer the following with reasonable confidence, using only protocol traffic:
+
+- which peers (identified by IP address, timing, topology, or other network metadata) have connected which other peers
+- the relative flow of content (which peer provided data to the other, and how much)
+- which primary hypercore feeds which peers have knowledge of (identified by discovery key, not public key)
+- which peers have the public key for a given discovery key (based on whether connections succeed)
+
+Such an observer can not determine the specific content of hypercore feeds, or (with confidence) which peer (or peers) have write access to a feed.
+
+The wire protocol does not pad message sizes. This means that a persistent observer could potentially identify traffic content by infering message sizes.
+
+The hypercore protocol does not intentionally identify peers across connections, but it has been shown that even the smallest amount of identifying metadata can be used, statistically, to track and surveil users. These techniques are sometimes called "device fingerprints", "browser fingerprints", or "permacookies". Hypercore protocol users should not consider themselves immune to such tracking without specific additional effort to identify and mitigate such fingerprints.
+
+Any network observer with the public key can fully decrypt the network traffic of *any* and *all* peers establishing a connection using that key. This includes channel content other than the first (discovery) channel. Peers should not consider extension messages, "Have"/"Want" metadata, or any other messages or metadata private from other peers (or observers) with the public key.
+
+The wire protocol encryption provides message *secrecy* (from parties who do not have the public key), but does not guarantee any form of *authenticity*. In the case of Dat and hypercore, the application layer itself verifies authenticity of transfered content using hashes and signatures. However, implementors should note that network agents who can manipulate traffic can modify data in flight without detection, regardless of whether they have the feed public key. However, peers are already not trusted parties, and thus implementors must already take care to treat protocol messages as potentially hostile input.
+
+The issues of observer decryption and message authenticity may be addressed in a future revision of the wire protocol.
 
 
 # References
