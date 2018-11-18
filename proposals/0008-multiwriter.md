@@ -300,10 +300,10 @@ section for more details.
 # Examples
 [examples]: #examples
 
-The examples below assume that a DEP-0007 `HypercoreHeader` message (with
-protocol `hyperdb`) has been written for all feeds. Feed entry indexes (aka,
-sequence numbers) are zero-indexed, but with the header message at index 0,
-hyperdb entries start at 1.
+Every hyperdb hypercore feed starts with a protocol header (of type
+`HypercoreHeader`) at entry index 0, as specified in DEP-0007. Feed entry
+indexes (aka, sequence numbers), are zero-indexed. With the header message at
+index 0, hyperdb entries start at index 1.
 
 Let's say Alice starts a new hyperdb and writes two key/value entries to it:
 

@@ -133,9 +133,9 @@ An example pseudo-code session working with a database might be:
 A hyperdb hypercore feed typically consists of a sequence of protobuf-encoded
 messages of "Entry" or "InflatedEntry" type. A special "protocol header" entry
 should be the first entry in the feed, as specified in DEP `0007: Hypercore
-Header`, with protocol string `hyperdb`. Hyperdb itself does not specify the
-content of the optional header `extension` field, leaving that to higher-level
-protocols.
+Header`, with `dataStructureType` string `hyperdb`. Hyperdb itself does not
+specify the content of the optional header `extension` field, leaving that to
+higher-level protocols.
 
 There is sometimes a second "content" feed associated with the primary hyperdb
 key/value feed, to store data that does not fit in the (limited) `value` size
@@ -203,11 +203,11 @@ to both message types are:
   of the feed (aka, it is not mutable).
 
 For the case of a single-writer feed, not using multi-writer features, it is
-sufficient to write a single InflatedEntry message in the hypercore feed, with
-`feeds` containing a single entry (a pointer to the current feed itself), and
-`contentFeed` optionally set to a pointer to a paired content feed. Following
-that, the `Entry` type can be used for all other messages, with `inflate`
-pointing back to the single `InflatedEntry` message.
+sufficient to write a single `InflatedEntry` message in the hypercore feed,
+with `feeds` containing a single entry (a pointer to the current feed itself),
+and `contentFeed` optionally set to a pointer to a paired content feed.
+Following that, the `Entry` type can be used for all other messages, with
+`inflate` pointing back to the single `InflatedEntry` message.
 
 
 ## Path Hashing
@@ -490,9 +490,15 @@ The overall bytestring would be:
 
 ## Simple Put and Get
 
-Starting with an empty hyperdb `db`, if we `db.put('/a/b', '24')` we expect to
-see a single `Entry` and index 1 (following the DEP-0007 hypercode header at
-index 0):
+An empty hyperdb `db` starts with a single DEP-0007 `HypercoreHeader` message
+at entry index 0:
+
+```
+{ dataStructureType: 'hyperdb' }
+```
+
+If we `db.put('/a/b', '24')`, we expect to see a single Entry (of
+`InflatedEntry` type) at index 1:
 
 ```
 { key: 'a/b',
@@ -514,7 +520,7 @@ Note that the first 64 bytes in path match those of the `/a/b/c` example from
 the [path hashing][path_hash] section, because the first two path components
 are the same. Since this is the second entry, the entry index is 1.
 
-Now we `db.put('/a/c', 'hello')` and expect a second Entry:
+Now we `db.put('/a/c', 'hello')` and expect a second `Entry (of `Entry` type):
 
 ```
 { key: 'a/c',
