@@ -119,9 +119,7 @@ Each extension is capable of sending custom payloads through the Extension messa
 # Message Details
 [message-details]: #message-details
 
-TODO: description of framing
-
-Wire format is `<len>(<header><message>)`. `header` is a varint, of form `channel << 4 | <4-bit-type>`. `len` is a varint with the number of bytes in the following message (the sum of the `header` and `message`).
+The connection between peers is an endless stream of bytes, so each message must be "framed" so the recipient knows when it starts and ends. The wire framing format is `<len>(<header><message>)`. `len` is a varint with the number of bytes in the following message (the sum of the `header` and `message`).  `header` is a varint, of form `channel << 4 | <4-bit-type>`. Note that in most cases the `header` varint will be a single byte, but clients should treat it as a varint to accomodate large channel counts.
 
 Messages are encoded (serialized) using Google's [protobuf][protobuf] encoding.
 
@@ -146,9 +144,10 @@ Messages are encoded (serialized) using Google's [protobuf][protobuf] encoding.
 #### Keep-Alive
 [msg-keepalive]: #msg-keepalive
 
-A message of body length 0 (giving a total message size of 1 byte for the `len` varint) is a keep-alive. Depending on transport and application needs, peers may optionally send keep-alive messages to help detect and prevent connection loss. Peers must always handle keep-alive messages correctly (aka, ignore them), regardless of transport.
+A message of body length 0 (giving a total message size of 1 byte for the `len` varint) is a keep-alive. Peers must always handle keep-alive messages correctly (aka, ignore them), regardless of transport.
 
-TODO: what is a good default interval?
+Depending on transport and application needs, peers may *optionally* send keep-alive messages to help detect and prevent connection loss. Implementors are free to chose their own period or strategy for sending keep-alives. A reasonable default period is 300 seconds (5 minutes).
+
 
 #### Feed
 [msg-feed]: #msg-feed
@@ -330,7 +329,7 @@ The `payload` may be any message content, as needed by the extension.
 ## Run-Length Encoded Bitfield
 [run-length-encoded-bitfield]: #run-length-encoded-bitfield
 
-The RLE bitfield is a series of compressed and uncompressed bit sequences.All sequences start with a header that is a varint. If the last bit is set in the varint (it is an odd number) then a header represents a compressed bit sequence. If the last bit is not set then a header represents an non compressed sequence.
+The Run-Length Encoded (RLE) bitfield is a series of compressed and uncompressed bit sequences.All sequences start with a header that is a varint. If the last bit is set in the varint (it is an odd number) then a header represents a compressed bit sequence. If the last bit is not set then a header represents an non compressed sequence.
 
 ```
 compressed-sequence = varint(byte-length-of-sequence << 2 | bit << 1 | 1)
@@ -377,7 +376,7 @@ We would encode this into the bit vector `1011`. Decoded:
 1(0)11 <-- we don't have the next uncle, 5
 (1)000 <-- we have the next parent, 3
 ```
-      
+
 So using this digest the recipient can easily figure out that they only need to send us one hash, 5, for us to verify block 0.
 
 The bit vector 1 (only contains a single one) means that we already have all the hashes we need so just send us the block.
@@ -396,7 +395,7 @@ Alice has an e-book identified by a public-key (PK) which Bob would like to down
   BOB: sends Handshake          {id: BobID}
 ALICE: sends Feed (unencrypted) {discoveryKey: DK, nonce: AliceNonce}
 ALICE: sends Handshake          {id: AliceID}
-  BOB: waits for Feed 
+  BOB: waits for Feed
   BOB: waits for Handshake
 ALICE: waits for Feed
 ALICE: waits for Handshake
@@ -420,12 +419,9 @@ ALICE: closes connection
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- Encryption might not make sense in some contexts (eg, IPC, or if the transport layer is already providing encryption). Should this DEP recognize this explicitly?
-- What parts of the design do you expect to resolve through the DEP consensus process before this gets merged?
-- What parts of the design do you expect to resolve through implementation and code review, or are left to independent library or application developers?
-- What related issues do you consider out of scope for this DEP that could be addressed in the future independently of the solution that comes out of this DEP?
-- How do "ack"s work?
-- There is a potential race condition with channel index numbers. If each peer sends a new Feed message on a new channel at the same time (aka, before the remote message is received), what should peers do? Probably ignore the channel and try again. Possibly channel indices should go even/odd depending on the peer proposing to prevent conflicts.
+- Encryption might not make sense in some contexts (eg, IPC, or if the transport layer is already providing encryption). Should this DEP recognize this explicitly? Does not need to be addressed before Draft status.
+- How do "ack"s work? Should be resolved before Draft status.
+- There is a potential race condition with channel index numbers. If each peer sends a new Feed message on a new channel at the same time (aka, before the remote message is received), what should peers do? Probably ignore the channel and try again. Possibly channel indices should go even/odd depending on the peer proposing to prevent conflicts. Does not need to be resolved before Draft status.
 
 
 # Changelog
