@@ -7,7 +7,7 @@ Type: Standard
 
 Status: Undefined (as of 2018-02-04)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/8)
 
 Authors: [Paul Frazee](https://github.com/pfrazee), [Bryan Newbold](https://github.com/bnewbold)
 
@@ -34,6 +34,8 @@ The Dat wire protocol depends on the use of a binary transport protocol which pr
 - reliable delivery (no dropped or partial messages)
 - in-order delivery of messages
 
+Two notable transport protocols that satisfy these requirements are TCP and µTP (the "Micro Transport Protocol").
+
 Peers wishing to connect need to discover each other using some mechanism or another (see forthcoming DEPs on some options; this process is modular and swappable), and both need to have the public key for the primary hypercore they wish to exchange.
 
 Messages are framed by the Dat protocol itself (see Messages section for details).
@@ -46,7 +48,7 @@ Multiple hypercore feeds can be synchronized over the same protocol connection. 
 
 Note that at least one feed is necessary for each connection (for handshaking to succeed), and that the first feed is the one used for discovery and as an encryption key.
 
-To initiate a new channel (after the primary is established), TODO
+To initiate a new channel (after the primary is established), a peer can send a Feed message, followed by an Info message. Unlike the first message sent on an overall connection, later Feed messages are encrypted. Either party may initiate a new channel with a Feed message at any time.
 
 
 ## Handshake Procedure
@@ -119,7 +121,7 @@ Each extension is capable of sending custom payloads through the Extension messa
 
 TODO: description of framing
 
-Wire format is `<len>(<header><message>)`. `header` is a varint, of form `channel << 4 | <4-bit-type>`.
+Wire format is `<len>(<header><message>)`. `header` is a varint, of form `channel << 4 | <4-bit-type>`. `len` is a varint with the number of bytes in the following message (the sum of the `header` and `message`).
 
 Messages are encoded (serialized) using Google's [protobuf][protobuf] encoding.
 
@@ -151,7 +153,7 @@ TODO: what is a good default interval?
 #### Feed
 [msg-feed]: #msg-feed
 
-`type=0` Should be the first message sent on a channel. Establishes the content which will be exchanged on the channel.
+`type=0` Should be the first message sent on a channel. Establishes the content which will be exchanged on the channel. See the [Channels][channels] section for details.
 
 ```
 message Feed {
@@ -293,7 +295,7 @@ message Cancel {
 
 `type=9` Send a Hypercore feed block. May contain the data of the block, and may contain the hashes of the ancestor nodes in the merkle tree. Should only be sent in reaction to a Request message.
 
-When a Data message is received, its node hashes and signature should be verified against any local tree information. If the nodes can be verified, they and the block data should be stored locally.
+When a Data message is received, its node hashes and signature should be verified against any local tree information. If the nodes can be verified, they and the block data may be stored locally.
 
 If a Data message is received for a block which was not requested, the peer can react by ignoring the data and sending an Unhave message in response. This will inform the remote that the data was rejected, and is not stored.
 
@@ -390,30 +392,29 @@ These digests are very compact in size, only `(log2(number-of-blocks) + 2) / 8` 
 Alice has an e-book identified by a public-key (PK) which Bob would like to download. The e-book also has a discovery-key (DK). Bob connects to Alice, and the following exchange occurs:
 
 ```
-  BOB: sends Feed          {discoveryKey: DK, nonce: BobNonce}
-  BOB: sends Handshake     {id: BobID}
-ALICE: sends Feed          {discoveryKey: DK, nonce: AliceNonce}
-ALICE: sends Handshake     {id: AliceID}
+  BOB: sends Feed (unencrypted) {discoveryKey: DK, nonce: BobNonce}
+  BOB: sends Handshake          {id: BobID}
+ALICE: sends Feed (unencrypted) {discoveryKey: DK, nonce: AliceNonce}
+ALICE: sends Handshake          {id: AliceID}
   BOB: waits for Feed 
   BOB: waits for Handshake
 ALICE: waits for Feed
 ALICE: waits for Handshake
-  BOB: sends Want          {start: 0}
-ALICE: receives Want       {start: 0}
-ALICE: sends Have          {start: 0, bitfield: ...}
-  BOB: receives Have       {start: 0, bitfield: ...}
-  BOB: sends Request       (for block 0)
-ALICE: receives Request    (for block 0)
-ALICE: sends Data          (for block 0)
-  BOB: receives Data       (for block 0)
-  BOB: sends Request       (for block 1)
-ALICE: receives Request    (for block 1)
-ALICE: sends Data          (for block 1)
+  BOB: sends Want               {start: 0}
+ALICE: receives Want            {start: 0}
+ALICE: sends Have               {start: 0, bitfield: ...}
+  BOB: receives Have            {start: 0, bitfield: ...}
+  BOB: sends Request            (for block 0)
+ALICE: receives Request         (for block 0)
+ALICE: sends Data               (for block 0)
+  BOB: receives Data            (for block 0)
+  BOB: sends Request            (for block 1)
+ALICE: receives Request         (for block 1)
+ALICE: sends Data               (for block 1)
    ... (repeat for all other blocks) ...
-  BOB: sends Info          {downloading: false}
+  BOB: sends Info               {downloading: false}
 ALICE: closes connection
 ```
-
 
 
 # Unresolved questions
@@ -424,6 +425,7 @@ ALICE: closes connection
 - What parts of the design do you expect to resolve through implementation and code review, or are left to independent library or application developers?
 - What related issues do you consider out of scope for this DEP that could be addressed in the future independently of the solution that comes out of this DEP?
 - How do "ack"s work?
+- There is a potential race condition with channel index numbers. If each peer sends a new Feed message on a new channel at the same time (aka, before the remote message is received), what should peers do? Probably ignore the channel and try again. Possibly channel indices should go even/odd depending on the peer proposing to prevent conflicts.
 
 
 # Changelog
