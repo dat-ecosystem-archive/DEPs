@@ -415,6 +415,31 @@ ALICE: sends Data               (for block 1)
 ALICE: closes connection
 ```
 
+# Privacy and Security Considerations
+
+TODO:
+
+
+# References
+
+"Dat - Distributed Dataset Synchronization And Versioning" by Maxwell Ogden, Karissa McKelvey, and Mathias Buus Madsen. Whitepaper, May 2017 ([pdf](https://datproject.org/paper)).
+
+"The BitTorrent Protocol Specification (BEP #3)", by Bram Cohen. January 2008 ([html](http://www.bittorrent.org/beps/bep_0003.html))
+
+"uTorrent transport protocol (BEP #29)", by Arvid Norberg. June 2009 ([html](http://www.bittorrent.org/beps/bep_0029.html))
+
+"Merkle hash torrent extension (BEP #30)", by Arno Bakker. May 2009. ([html](http://www.bittorrent.org/beps/bep_0030.html))
+
+"Updating Torrents Via DHT Mutable Items (BEP #46)", by Luca Matteis. July 2016. ([html](http://www.bittorrent.org/beps/bep_0046.html))
+
+"Rarest First and Choke Algorithms Are Enough", by Arnaud Legout, G.  Urvoy-Keller, and P. Michiardi. October 2006. ([pdf](http://conferences.sigcomm.org/imc/2006/papers/p20-legout.pdf))
+
+"Extending the Salsa20 nonce", by Daniel J. Bernstein. February 22011. ([pdf](https://cr.yp.to/snuffle/xsalsa-20110204.pdf))
+
+libsodium is a fork of NaCl (the "Networking and Cryptography library", developed by Daniel J. Bernstein). More information available from the [NaCl website](https://nacl.cr.yp.to/) and [libsodium website](https://libsodium.org). Specific information about the BLAKE2b hash function available from the [BLAKE2 website](https://blake2.net/).
+
+Google Protocol Buffers Documentation ([website](https://developers.google.com/protocol-buffers/))
+
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
