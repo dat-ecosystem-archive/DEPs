@@ -59,7 +59,7 @@ The `intent` is an free string field with pre-specified identifiers:
 - `backup-publish`: Similar to `backup` but it intends to publish outside of the DAT protocol _(i.e. a HTTP service)_
 - `proxy`: A client that connects in order for re-share whatever is requested to further unspecified clients.
 
-For sustom strings, the recommendation is to use `non-standard-` as a prefix for intents in order to make sure
+For custom strings, the recommendation is to use `non-standard-` as a prefix for intents in order to make sure
 that the future amendments to the list will not interfere with non-standard usage.
 
 ## Change of an intent
