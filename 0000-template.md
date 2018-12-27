@@ -33,7 +33,7 @@ Document new features or processes as if this proposal has already been accepted
 # Reference Documentation
 [reference-documentation]: #reference-documentation
 
-This section is a more formal description of the proposal, written as if it was a sub-section of the standard (for techincal proposals) or a formal process or "fine print" for process proposals.
+This section is a more formal description of the proposal, written as if it was a sub-section of the standard (for technical proposals) or a formal process or "fine print" for process proposals.
 
 It should be unambiguous and cover all known corner-cases. Formal language (such as protobuf schemas or binary header diagrams) are appropriate here.
 
@@ -65,7 +65,7 @@ Why should we *not* do this?
 # Changelog
 [changelog]: #changelog
 
-A brief statemnt about current status can go here, follow by a list of dates
+A brief statement about current status can go here, follow by a list of dates
 when the status line of this DEP changed (in most-recent-last order).
 
 - YYYY-MM-DD: First complete draft submitted for review
