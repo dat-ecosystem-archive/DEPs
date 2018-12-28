@@ -1,6 +1,6 @@
 # 2018-12-27 Hypercore SLEEP Headers DEP
 
-Title: **DEP-0000: Hypercore SLEEP Headers**
+Title: DEP-0000: Hypercore SLEEP Headers
 
 Short Name: `0000-sleep-headers`
 
@@ -50,12 +50,13 @@ Hypercore files without SLEEP headers are:
 
 - public key
 - secret key
+
 # Reference Documentation
+
 ## Header Layout
 
 Each SLEEP header is 32 bytes. Different file types have different header
 configurations. This section describes the shared layout of the headers.
-
 
     <32 byte header>
       <3 byte magic string: 0x050257>
@@ -66,12 +67,12 @@ configurations. This section describes the shared layout of the headers.
       <variable byte algorithm name>
       <variable byte padding>
 
-**3 byte magic string**
+### 3 byte magic string
 The first 3 bytes in the header are “magic bytes” that serve to identify files
 as SLEEP formatted. These numbers correspond to Mathias Buus’s birthday in hex
 notation (05/02/87).
 
-**1 byte header type**
+### 1 byte header type
 The 4th byte determines what kind of header file this is. Currently 3 header
 types supported:
 
@@ -79,21 +80,21 @@ types supported:
 - signatures (`0x01`)
 - (Merkle) tree (`0x02`).
 
-**1 byte version number**
+### 1 byte version number
 The 5th byte is used to determine the protocol version. Currently only one
 version of the protocol exists, so this number is always set to `0x00`.
 
-**2 byte entry size (u16BE)**
+### 2 byte entry size (u16BE)
 Each entry in the SLEEP file’s body has a fixed size. The size of these entries
 is determined by the entry size value. This value has to be read as a 16-bit
 Big-Endian value.
 
-**1 byte algorithm name prefix**
+### 1 byte algorithm name prefix
 SLEEP files can be encoded using different algorithms. The algorithm names are
 encoded as strings, and not as numbers. The 1 byte algorithm name prefix exists
 to signal how long the algorithm name string will be.
 
-**variable byte algorithm name**
+### variable byte algorithm name
 The algorithm name determines how SLEEP files are encoded. The length of the
 algorithm name is variable length, and encoded as the 1 byte algorithm name
 prefix.
@@ -104,7 +105,7 @@ Currently 3 possible variants exist:
 - `Ed25519` (7 bytes)
 - None (0 bytes)
 
-**variable byte padding**
+### variable byte padding
 Each SLEEP header should be a total of 32 bytes. If there is not enough data to
 fill 32 bytes, the remainder of the header should be filled with zeroes
 (`0x00`).
@@ -128,11 +129,11 @@ This describes the header layout of SLEEP headers in the bitfield configuration
       <0 byte algorithm name>
       <24 byte padding>
 
-**1 byte header type: 0x00**
+### 1 byte header type: 0x00
 Bitfields should have the header type of `0x00`.
 
-**2 byte entry size (u16BE): 3328**
-Each entry in the bitfield’s body is `3328` bytes. This is the combined length
+### 2 byte entry size (u16BE): 3328
+Each entry in the bitfield’s body is `3328` bytes. This is the combined leng
 of Hypercore’s 3 individual bitfields:
 
 - data bitfield: `1024` bytes
@@ -141,15 +142,15 @@ of Hypercore’s 3 individual bitfields:
 
 Together these add up to `3328`.
 
-**1 byte algorithm name prefix: 0**
+### 1 byte algorithm name prefix: 0
 Bitfields make use of a Run-Length Encoding (RLE) algorithm to encode their
 contents. However this is only for compression purposes, and not included as
 part of the algorithm name.
 
-**variable byte algorithm name**
+### variable byte algorithm name
 No algorithm name is provided.
 
-**variable byte padding: 24**
+### variable byte padding: 24
 `24` zeroes are appended to the end of the header to create a total of 32 bytes.
 
 ## Signatures Layout
@@ -166,19 +167,19 @@ configuration
       <7 byte algorithm name: Ed25519>
       <21 byte padding>
 
-**1 byte header type: 0x01**
+### 1 byte header type: 0x01
 Signatures should have the header type of `0x01`.
 
-**2 byte entry size (u16BE): 64**
+### 2 byte entry size (u16BE): 64
 Each signature in the signatures file is `64` bytes.
 
-**1 byte algorithm name prefix: 7**
+### 1 byte algorithm name prefix: 7
 The string `Ed25519` is 7 characters long.
 
-**variable byte algorithm name: Ed25519**
+### variable byte algorithm name: Ed25519
 Signatures are created using the `Ed25519` encryption scheme.
 
-**variable byte padding: 21**
+### variable byte padding: 21
 `21` zeroes are appended to the end of the header to create a total of 32 bytes.
 
 ## Merkle Tree Layout
@@ -194,20 +195,20 @@ This describes the header layout of SLEEP headers in the tree configuration
       <7 byte algorithm name: BLAKE2b>
       <21 byte padding>
 
-**1 byte header type: 0x02**
+### 1 byte header type: 0x02
 Merkle Trees should have the header type of `0x02`.
 
-**2 byte entry size (u16BE): 40**
+### 2 byte entry size (u16BE): 40
 Each entry in the tree file is `40` bytes. The first 32 bytes is the hash. The
 next 8 bytes is the byte size of the spanning tree.
 
-**1 byte algorithm name prefix: 7**
+### 1 byte algorithm name prefix: 7
 The string `BLAKE2b` is 7 characters long.
 
-**variable byte algorithm name: BLAKE2b**
+### variable byte algorithm name: BLAKE2b
 Merkle Tree entries are created using the `BLAKE2b` hashing scheme.
 
-**variable byte padding: 21**
+### variable byte padding: 21
 `21` zeroes are appended to the end of the header to create a total of 32 bytes.
 
 # Drawbacks
