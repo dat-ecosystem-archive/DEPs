@@ -242,12 +242,12 @@ By convention, the order of Feed lists is to start with the writer's local
 feed first, then proceed by the order in which Feeds were discovered. Note that
 this ordering is not consistent across writers, only within the same feed.
 
-As an example, if a node (non-inflated entry) had a vector clock of `[0, 2,
-5]`, that would mean:
+As an example, if a node (non-inflated entry) had a vector clock of `[1, 3,
+6]`, that would mean:
 
-- when this node was written, the largest seq # in the writer's local fed was 0
-- when this node was written, the largest seq # in the second known feed was 2
-- when this node was written, the largest seq # in the third known feed was 5
+- when this node was written, the largest seq # in the writer's local fed was 1
+- when this node was written, the largest seq # in the second known feed was 3
+- when this node was written, the largest seq # in the third known feed was 6
 
 
 ## Multi-Feed Aware hyperdb
@@ -300,6 +300,11 @@ section for more details.
 # Examples
 [examples]: #examples
 
+Every hyperdb hypercore feed starts with a protocol header (of type
+`HypercoreHeader`) at entry index 0, as specified in DEP-0007. Feed entry
+indexes (aka, sequence numbers), are zero-indexed. With the header message at
+index 0, hyperdb entries start at index 1.
+
 Let's say Alice starts a new hyperdb and writes two key/value entries to it:
 
 ```
@@ -308,16 +313,17 @@ Alice: db.put('/foo/bar', 'baz')
 Alice: db.put('/foo/2',   '{"json":3}')
 
 // Alice's Feed
-0 (key='/foo/bar', value='baz',
-   vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
-1 (key='/foo/2', value='{"json":3}',
-   vector_clock=[0], inflated=0)
+0 (HypercoreHeader, protocol=hyperdb)
+1 (key='/foo/bar', value='baz',
+   vector_clock=[1], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+2 (key='/foo/2', value='{"json":3}',
+   vector_clock=[1], inflated=0)
 
 // Graph
-Alice:  0  <---  1
+Alice:  1  <---  2
 ```
 
-The vector clock at `seq=1` points back to `seq=0`.
+The vector clock at `seq=2` points back to `seq=1`.
 
 Next Alice *authorizes* Bob to write to the database. Internally, this means Alice
 writes an Inflated entry to her feed that contains Bob's Feed (identified by his
@@ -328,15 +334,16 @@ public key) in her feed list.
 Alice: db.authorize('b0b123...')
 
 // Alice's Feed
-0 (key='/foo/bar', value='baz',
-   vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
-1 (key='/foo/2', value='{"json":3}',
-   vector_clock=[0], inflated=0)
-2 (key=null, value=null,
-   vector_clock=[1], inflated=0, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
+0 (HypercoreHeader, protocol=hyperdb)
+1 (key='/foo/bar', value='baz',
+   vector_clock=[1], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+2 (key='/foo/2', value='{"json":3}',
+   vector_clock=[1], inflated=1) (Entry)
+3 (key=null, value=null,
+   vector_clock=[2], inflated=1, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
 
 // Graph
-Alice: 0  <---  1  <---  2
+Alice: 1  <---  2  <---  3
 ```
 
 Bob writes a value to his feed, and then Alice and Bob sync. The result is:
@@ -346,26 +353,28 @@ Bob writes a value to his feed, and then Alice and Bob sync. The result is:
 Bob: db.put('/a/b', '12)
 
 // Alice's Feed
-0 (key='/foo/bar', value='baz',
-   vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
-1 (key='/foo/2', value='{"json":3}',
-   vector_clock=[0], inflated=0)
-2 (key=null, value=null,
-   vector_clock=[1], inflated=0, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
+0 (HypercoreHeader, protocol=hyperdb)
+1 (key='/foo/bar', value='baz',
+   vector_clock=[1], inflated=null, feeds=['a11ce...']) (InflatedEntry)
+2 (key='/foo/2', value='{"json":3}',
+   vector_clock=[1], inflated=1) (Entry)
+3 (key=null, value=null,
+   vector_clock=[2], inflated=1, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
 
 // Bob's Feed
-0 (key='/a/b', value='12',
+0 (HypercoreHeader, protocol=hyperdb)
+1 (key='/a/b', value='12',
    vector_clock=[0], inflated=null, feeds=['b0b123...']) (InflatedEntry))
 
 // Graph
-Alice: 0  <---  1  <---  2
-Bob  : 0
+Alice: 1  <---  2  <---  3
+Bob  : 1
 ```
 
 Notice that none of Alice's entries refer to Bob's, and vice versa. Neither has
 written any entries to their feeds since the two became aware of each other.
-Right now there are two "heads" of the graph: Alice's feed at seq 2, and Bob's
-feed at seq 0. Any `get()` operations would need to descend from both heads,
+Right now there are two "heads" of the graph: Alice's feed at seq 3, and Bob's
+feed at seq 1. Any `get()` operations would need to descend from both heads,
 though in this situation there would be no conflicts as the keys in the two
 feeds are disjoint.
 
@@ -376,28 +385,30 @@ Next, Alice writes a new value, and her latest entry will refer to Bob's:
 Alice: db.put('/foo/hup', 'beep')
 
 // Alice's Feed
-0 (key='/foo/bar', value='baz',
+0 (HypercoreHeader, protocol=hyperdb)
+1 (key='/foo/bar', value='baz',
    vector_clock=[0], inflated=null, feeds=['a11ce...']) (InflatedEntry)
-1 (key='/foo/2', value='{"json":3}',
-   vector_clock=[0], inflated=0)
-2 (key=null, value=null,
+2 (key='/foo/2', value='{"json":3}',
+   vector_clock=[0], inflated=0) (Entry)
+3 (key=null, value=null,
    vector_clock=[1, null], inflated=0, feeds=['a11ce...', 'b0b123...']) (InflatedEntry)
-3 (key='/foo/hup', value='beep',
-   vector_clock=[2,0], inflated=2)
+4 (key='/foo/hup', value='beep',
+   vector_clock=[2,0], inflated=2) (Entry)
 
 // Bob's Feed
-0 (key='/a/b', value='12',
+0 (HypercoreHeader, protocol=hyperdb)
+1 (key='/a/b', value='12',
    vector_clock=[0], inflated=null, feeds=['b0b123...']) (InflatedEntry))
 
 
 // Graph
-Alice: 0  <---  1  <---  2  <--/  3
-Bob  : 0  <-------------------/
+Alice: 1  <---  2  <---  3  <--/  4
+Bob  : 1  <-------------------/
 ```
 
 Alice's latest feed entry now points to Bob's latest feed entry, and there is
 only one "head" in the database. This means that any `get()` operations only
-need to run once, starting at `seq=3` in Alice's feed.
+need to run once, starting at `seq=4` in Alice's feed.
 
 
 # Security and Privacy Concerns
@@ -508,5 +519,6 @@ Jim Pick (@jimpick) has been an active contributor working out multi-writer deta
 - 2018-05-23: hyperdb 3.0.0 node.js implementation released
 - 2018-06-10: Second draft submitted for review
 - 2018-07-06: Accepted with Draft status (after edits)
+- 2018-11-17: Clarify example indexing with HypercoreHeaders
 
 [arch_md]: https://github.com/mafintosh/hyperdb/blob/master/ARCHITECTURE.md
