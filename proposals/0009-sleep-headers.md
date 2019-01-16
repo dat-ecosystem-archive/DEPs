@@ -1,4 +1,3 @@
-# Hypercore SLEEP Headers DEP
 
 Title: DEP-0009: Hypercore SLEEP Headers
 
@@ -13,10 +12,12 @@ Github PR: https://github.com/datprotocol/DEPs/pull/56
 Authors: Yoshua Wuyts <yoshuawuyts@gmail.com>
 
 # Summary
+[summary]: #summary
 
 This documents the SLEEP headers that are part of Hypercore protocol.
 
 # Motivation
+[motivation]: #motivation
 
 SLEEP headers in the Hypercore protocol contain metadata explaining how a feed
 is constructed, and how to interpret the data in it.
