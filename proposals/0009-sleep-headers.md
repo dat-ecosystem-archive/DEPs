@@ -1,14 +1,14 @@
-# 2018-12-27 Hypercore SLEEP Headers DEP
+# Hypercore SLEEP Headers DEP
 
-Title: DEP-0000: Hypercore SLEEP Headers
+Title: DEP-0009: Hypercore SLEEP Headers
 
-Short Name: `0000-sleep-headers`
+Short Name: `0009-sleep-headers`
 
 Type: Standard
 
-Status: Undefined (as of 2018-12-27)
+Status: Draft (as of 2019-01-16)
 
-Github PR: (add HTTPS link here after PR is opened)
+Github PR: https://github.com/datprotocol/DEPs/pull/56
 
 Authors: Yoshua Wuyts <yoshuawuyts@gmail.com>
 
