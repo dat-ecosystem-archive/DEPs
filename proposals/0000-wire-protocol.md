@@ -342,7 +342,7 @@ uncompressed-sequence = varint(byte-length-of-bitfield << 1 | 0) + bitfield
 ## Block Tree Digest
 [block-tree-digest]: #block-tree-digest
 
-As described in DEP-0002 (Hypercore), a peer should be able to verify both the integrity of received data (aka, was there corruption somewhere along the way, detected via hash) and the authenticity (aka, is this the data from the original writer, detected via signature). Hypercore transmits the hash for every data block, but only signatures for the root hashes of Merkel trees, not individual block hashes, which means a peer may need additional hashes (for data blocks they do not have a copy of) if they want to verify the signatures of individual blocks.
+As described in DEP-0002 (Hypercore), a peer should be able to verify both the integrity of received data (aka, was there corruption somewhere along the way, detected via hash) and the authenticity (aka, is this the data from the original writer, detected via signature). Hypercore transmits the hash for every data block, but only signatures for the root hashes of Merkle trees, not individual block hashes, which means a peer may need additional hashes (for data blocks they do not have a copy of) if they want to verify the signatures of individual blocks.
 
 Redundantly transmitting all such hashes on every request would be inefficient if the receiver already had some hashes, so requesting peers can specify which hashes they need in the `nodes` field of the `Request` message. Instead of sending node indexes, the peer can send a compact bitfield, indicating for each "uncle" and "parent" whether the hash should be transmitted.
 
@@ -358,31 +358,32 @@ Consider the following tree:
 6
 ```
 
-If the receiving peers wants to fetch, and verify, block 2, it needs to communicate whether it already have the uncle hashes (0, 5) and the parent hashes (3). This information can be compressed into a small bit vector with the following scheme:
+If the receiving peers wants to fetch, and verify, block 6, it needs to communicate whether it already has the uncle hashes (4, 1) and the parent hashes (3). This information can be compressed into a small bit vector with the following scheme:
 
  - the least-significant bit indicates whether the most-significant bit is a "parent" (if '1') or an "uncle" (if '0')
  - all other bits, in order from least- to most-significant, indicate whether the corresponding "uncle" hash *does* need to be transmitted (if bit '0') or *does not* (if bit '1')
 
-An an example, suppose we want to fetch block 2 from a remote peer, and we already have the node metadata (hashes) for blocks 0 and 3, but not 5. In other words:
+An an example, suppose we want to fetch block 6 from a remote peer, and we already have the sparse node metadata (hashes) for blocks 3 and 4, but not 1. In other words:
 
- - 0, an uncle, we already have the hash
- - 5, next uncle, we don't have hash
- - 3, a parent, we do have hash
+ - 4, an uncle, we already have the hash
+ - 1, next uncle, we don't have hash
+ - 3, a parent (and root hash), we do have hash
+ - root signature (of hash 3) will be sent with request
 
 Our `Request` should include the digest bits:
 
 ```
 101(1) <-- indicates that the most-significant bit is a parent, not an uncle
-10(1)1 <-- do not send hash for the first uncle, 0
-1(0)11 <-- do send hash for the next uncle, 5
+10(1)1 <-- do not send hash for the first uncle, 4
+1(0)11 <-- do send hash for the next uncle, 1
 (1)000 <-- do not send hash for next parent, 3
 ```
 
 This digest (bit vector `1011`) is transmitted in a `uint64`, in the least-significant bits. The receiving peer can calculate (from the index number) exactly how many bits are expected and extract the bitfield. The "most-significant bit" referenced above is of just the fixed-size bitfield, not the `uint64` as a whole.
 
-From this, the remote peer will know to only send one hash (for block 5) for us to verify block 2. Note that we (the receiver) can calculate the hash for block 2 ourselves when we receive it.
+From this, the remote peer will know to only send one hash (for block 1) for us to verify block 6. Note that we (the receiver) can calculate the hash for block 6 ourselves when we receive it.
 
-As a special case, the bit vector `1` (only contains a single one) means that the sender should not send any hashes.
+As a special case, the bit vector `1` (only contains a single one) means that the sender should not send any hashes at all.
 
 These digests are very compact in size. Only `(log2(number-of-blocks) + 2) / 8` bytes are needed in the worst case. For example if you are sharing one trillion blocks of data the digest would be `(log2(1000000000000) + 2) / 8 ~= 6` bytes long (which fits in a single `uint64`).
 
