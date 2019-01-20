@@ -466,7 +466,6 @@ Google Protocol Buffers Documentation ([website](https://developers.google.com/p
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
-- Why are `Request` message block digests (`nodes`) a `uint64`, not a `varint`?
 - Encryption might not make sense in some contexts (eg, IPC, or if the transport layer is already providing encryption). Should this DEP recognize this explicitly? Does not need to be addressed before Draft status.
 - There is a potential race condition with channel index numbers. If each peer sends a new Feed message on a new channel at the same time (aka, before the remote message is received), what should peers do? Probably ignore the channel and try again. Possibly channel indices should go even/odd depending on the peer proposing to prevent conflicts. Does not need to be resolved before Draft status.
 
