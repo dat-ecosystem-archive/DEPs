@@ -174,7 +174,7 @@ Some notes on the fields:
  - **live** If both peers set to true, the connection will be kept open indefinitely.
  - **userData** An open field for sending data which you can retrieve on handshake. No value is prescribed by the protocol.
  - **extentions** A list of strings identifying additional message-types which are supported via the Extension message.
- - **ack** Should all blocks be explicitly acknowledged? TODO how should this work?
+ - **ack** A peer (the "sender") can set this flag to request that every time another peer (a "receiver") gets a `Data` message from the sender, that they reply with an explicit `Have` message once they have successfully persisted the data in storage. This lets the "sender" track how many persisted copies of a chunk there are.
 
 ```
 message Handshake {
