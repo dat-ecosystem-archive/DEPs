@@ -54,7 +54,7 @@ To initiate a new channel (after the primary is established), a peer can send a 
 ## Handshake Procedure
 [handshake]: #handshake
 
-A handshake procedure needs to occur for each feed on a channel; the first part of the first handshake happens in cleartext and both validates discovery keys and establishes encyption parameters used for the rest of the connection. The first (primary) channel has `id=0`.
+A handshake procedure needs to occur for each feed on a channel; the first part of the first handshake happens in cleartext and both validates discovery keys and establishes encryption parameters used for the rest of the connection. The first (primary) channel has `id=0`.
 
 The first (cleartext) message is a Feed message, and includes two fields: a nonce and a discovery key.
 
@@ -121,7 +121,7 @@ Each extension is capable of sending custom payloads through the Extension messa
 # Message Details
 [message-details]: #message-details
 
-The connection between peers is an endless stream of bytes, so each message must be "framed" so the recipient knows when it starts and ends. The wire framing format is `<len>(<header><message>)`. `len` is a varint with the number of bytes in the following message (the sum of the `header` and `message`).  `header` is a varint, of form `channel << 4 | <4-bit-type>`. Note that in most cases the `header` varint will be a single byte, but clients should treat it as a varint to accomodate large channel counts.
+The connection between peers is an endless stream of bytes, so each message must be "framed" so the recipient knows when it starts and ends. The wire framing format is `<len>(<header><message>)`. `len` is a varint with the number of bytes in the following message (the sum of the `header` and `message`).  `header` is a varint, of form `channel << 4 | <4-bit-type>`. Note that in most cases the `header` varint will be a single byte, but clients should treat it as a varint to accommodate large channel counts.
 
 Messages are encoded (serialized) using Google's [protobuf][protobuf] encoding.
 
@@ -435,13 +435,13 @@ A "persistent" (all-seeing) observer can infer the following with reasonable con
 
 Such an observer can not determine the specific content of hypercore feeds, or (with confidence) which peer (or peers) have write access to a feed.
 
-The wire protocol does not pad message sizes. This means that a persistent observer could potentially identify traffic content by infering message sizes.
+The wire protocol does not pad message sizes. This means that a persistent observer could potentially identify traffic content by inferring message sizes.
 
 The hypercore protocol does not intentionally identify peers across connections, but it has been shown that even the smallest amount of identifying metadata can be used, statistically, to track and surveil users. These techniques are sometimes called "device fingerprints", "browser fingerprints", or "permacookies". Hypercore protocol users should not consider themselves immune to such tracking without specific additional effort to identify and mitigate such fingerprints.
 
 Any network observer with the public key can fully decrypt the network traffic of *any* and *all* peers establishing a connection using that key. This includes channel content other than the first (discovery) channel. Peers should not consider extension messages, "Have"/"Want" metadata, or any other messages or metadata private from other peers (or observers) with the public key.
 
-The wire protocol encryption provides message *secrecy* (from parties who do not have the public key), but does not guarantee any form of *authenticity*. In the case of Dat and hypercore, the application layer itself verifies authenticity of transfered content using hashes and signatures. However, implementors should note that network agents who can manipulate traffic can modify data in flight without detection, regardless of whether they have the feed public key. However, peers are already not trusted parties, and thus implementors must already take care to treat protocol messages as potentially hostile input.
+The wire protocol encryption provides message *secrecy* (from parties who do not have the public key), but does not guarantee any form of *authenticity*. In the case of Dat and hypercore, the application layer itself verifies authenticity of transferred content using hashes and signatures. However, implementors should note that network agents who can manipulate traffic can modify data in flight without detection, regardless of whether they have the feed public key. However, peers are already not trusted parties, and thus implementors must already take care to treat protocol messages as potentially hostile input.
 
 The issues of observer decryption and message authenticity may be addressed in a future revision of the wire protocol.
 
