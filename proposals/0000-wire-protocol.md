@@ -342,7 +342,9 @@ uncompressed-sequence = varint(byte-length-of-bitfield << 1 | 0) + bitfield
 ## Block Tree Digest
 [block-tree-digest]: #block-tree-digest
 
-When asking for a block of data we want to reduce the amount of duplicate hashes that are sent back. To communicate which hashes we have, we just have to communicate two things: which uncles we have and whether or not we have any parent node that can verify the tree.
+As described in DEP-0002 (Hypercore), a peer should be able to verify both the integrity of received data (aka, was there corruption somewhere along the way, detected via hash) and the authenticity (aka, is this the data from the original writer, detected via signature). Hypercore transmits the hash for every data block, but only signatures for the root hashes of Merkel trees, not individual block hashes, which means a peer may need additional hashes (for data blocks they do not have a copy of) if they want to verify the signatures of individual blocks.
+
+Redundantly transmitting all such hashes on every request would be inefficient if the receiver already had some hashes, so requesting peers can specify which hashes they need in the `nodes` field of the `Request` message. Instead of sending node indexes, the peer can send a compact bitfield, indicating for each "uncle" and "parent" whether the hash should be transmitted.
 
 Consider the following tree:
 
@@ -356,35 +358,33 @@ Consider the following tree:
 6
 ```
 
-If we want to fetch block 0, we need to communicate whether of not we already have the uncles (2, 5) and the parent (3). This information can be compressed into very small bit vector using the following scheme:
+If the receiving peers wants to fetch, and verify, block 2, it needs to communicate whether it already have the uncle hashes (0, 5) and the parent hashes (3). This information can be compressed into a small bit vector with the following scheme:
 
- - Let the trailing bit denote whether or not the leading bit is a parent and not a uncle.
- - Let the previous trailing bits denote whether or not we have the next uncle.
+ - the least-significant bit indicates whether the most-significant bit is a "parent" (if '1') or an "uncle" (if '0')
+ - all other bits, in order from least- to most-significant, indicate whether the corresponding "uncle" hash *does* need to be transmitted (if bit '0') or *does not* (if bit '1')
 
-Let's consider an example. Suppose we want to fetch block 0, and we have 2 and 3 but not 5. We need to therefore communicate:
+An an example, suppose we want to fetch block 2 from a remote peer, and we already have the node metadata (hashes) for blocks 0 and 3, but not 5. In other words:
 
-```
-the leading bit is a parent, not an uncle
-we already have the first uncle, 2 so don't send us that
-we don't have the next uncle, 5
-we have the next parent, 3
-```
+ - 0, an uncle, we already have the hash
+ - 5, next uncle, we don't have hash
+ - 3, a parent, we do have hash
 
-We would encode this into the bit vector `1011`. Decoded:
+Our `Request` should include the digest bits:
 
 ```
-101(1) <-- the leading bit is a parent, not an uncle
-10(1)1 <-- we already have the first uncle, 2 so don't send us that
-1(0)11 <-- we don't have the next uncle, 5
-(1)000 <-- we have the next parent, 3
+101(1) <-- indicates that the most-significant bit is a parent, not an uncle
+10(1)1 <-- do not send hash for the first uncle, 0
+1(0)11 <-- do send hash for the next uncle, 5
+(1)000 <-- do not send hash for next parent, 3
 ```
 
-So using this digest the recipient can easily figure out that they only need to send us one hash, 5, for us to verify block 0.
+This digest (bit vector `1011`) is transmitted in a `uint64`, in the least-significant bits. The receiving peer can calculate (from the index number) exactly how many bits are expected and extract the bitfield. The "most-significant bit" referenced above is of just the fixed-size bitfield, not the `uint64` as a whole.
 
-The bit vector 1 (only contains a single one) means that we already have all the hashes we need so just send us the block.
+From this, the remote peer will know to only send one hash (for block 5) for us to verify block 2. Note that we (the receiver) can calculate the hash for block 2 ourselves when we receive it.
 
-These digests are very compact in size, only `(log2(number-of-blocks) + 2) / 8` bytes needed in the worst case. For example if you are sharing one trillion blocks of data the digest would be `(log2(1000000000000) + 2) / 8 ~= 6` bytes long.
+As a special case, the bit vector `1` (only contains a single one) means that the sender should not send any hashes.
 
+These digests are very compact in size. Only `(log2(number-of-blocks) + 2) / 8` bytes are needed in the worst case. For example if you are sharing one trillion blocks of data the digest would be `(log2(1000000000000) + 2) / 8 ~= 6` bytes long (which fits in a single `uint64`).
 
 # Examples
 
@@ -470,8 +470,8 @@ Google Protocol Buffers Documentation ([website](https://developers.google.com/p
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
+- Why are `Request` message block digests (`nodes`) a `uint64`, not a `varint`?
 - Encryption might not make sense in some contexts (eg, IPC, or if the transport layer is already providing encryption). Should this DEP recognize this explicitly? Does not need to be addressed before Draft status.
-- How do "ack"s work? Should be resolved before Draft status.
 - There is a potential race condition with channel index numbers. If each peer sends a new Feed message on a new channel at the same time (aka, before the remote message is received), what should peers do? Probably ignore the channel and try again. Possibly channel indices should go even/odd depending on the peer proposing to prevent conflicts. Does not need to be resolved before Draft status.
 
 
