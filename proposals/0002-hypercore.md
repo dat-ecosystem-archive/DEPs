@@ -185,7 +185,7 @@ Merkle trees are used to produce hashes which identify the content of a dataset.
 
 Hypercore feeds are internally represented by merkle trees, but act as lists which support the `append()` mutation. When this method is called, a new leaf node is added to the tree, generating a new root hash.
 
-To provide a persistent identifer for a Hypercore feed, we generate an asymmetric keypair. The public key of the keypair is used as the identifier. Any time a new root hash is generated, it is signed using the private key. This signature is distributed with the root hash to provide verification of its integrity.
+To provide a persistent identifier for a Hypercore feed, we generate an asymmetric keypair. The public key of the keypair is used as the identifier. Any time a new root hash is generated, it is signed using the private key. This signature is distributed with the root hash to provide verification of its integrity.
 
 
 ## Verifying received data
@@ -303,7 +303,7 @@ function verify (hash, signature, publicKey) {
 
 The maximum size of a Hypercore feed entry is 8mb.
 
-The Hypercore wire protocol applies an 10mb limit to message sizes. Accoringly, all entries on a Hypercore feed have an 8mb limit, to fit into a single message. Note that the 10mb/8mb limit is arbitrary and may be increased in the future.
+The Hypercore wire protocol applies an 10mb limit to message sizes. Accordingly, all entries on a Hypercore feed have an 8mb limit, to fit into a single message. Note that the 10mb/8mb limit is arbitrary and may be increased in the future.
 
 
 # Drawbacks

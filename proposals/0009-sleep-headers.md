@@ -134,7 +134,7 @@ This describes the header layout of SLEEP headers in the bitfield configuration
 Bitfields should have the header type of `0x00`.
 
 ### 2 byte entry size (u16BE): 3328
-Each entry in the bitfield’s body is `3328` bytes. This is the combined leng
+Each entry in the bitfield’s body is `3328` bytes. This is the combined length
 of Hypercore’s 3 individual bitfields:
 
 - data bitfield: `1024` bytes

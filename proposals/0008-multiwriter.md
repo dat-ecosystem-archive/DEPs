@@ -18,7 +18,7 @@ Authors:
 # Summary
 [summary]: #summary
 
-Multi-Writer is a set of schema, API, and feature extentions to allow multiple
+Multi-Writer is a set of schema, API, and feature extensions to allow multiple
 agents (users, devices, or software) to write to the same hyperdb database. By
 building on top of this abstraction layer, future versions of hyperdrive and
 Dat will gain these features.
@@ -109,7 +109,7 @@ opposed to "State-based") CRDT.
 [api]: #api
 
 A "node" is a data structure representing a database entry, including the
-`key`, `value`, and feed that the entry is commited to.
+`key`, `value`, and feed that the entry is committed to.
 
 `db.get(key)` (as described in the [hyperdb DEP][dep-hyperdb])
 returns an array of nodes. If it is unambiguous what the consistent state of a
@@ -148,7 +148,7 @@ At the time of this DEP there is no mechanism for revoking authorization.
 
 There is some overhead associated with each "writer" added to the feed,
 impacting the number of files on disk, memory use, and the computational cost
-of some lookup oprations. The design should easily accomodate dozens of
+of some lookup operations. The design should easily accommodate dozens of
 writers, and should scale to 1,000 writers without too much additional
 overhead. Note that a large number of writers also implies a larger number and
 rate of append operations, and additional network connections, which may cause
@@ -219,14 +219,14 @@ At any point in time, each writer has a potentially unique view of the
 distributed systems. For example, a given write might have the most recent
 appends from one peer (eg, only seconds old), but be missing much older appends
 from another (eg, days or weeks out of date). By having each writer include
-metadata about their percieved state of the system as a whole in operations to
+metadata about their perceived state of the system as a whole in operations to
 their Feed, all writers are able to collectively converge on an "eventually
 consistent" picture of the database as whole (this process will be described in
 the next section).
 
 A writer's "current known state" of the database consists of the set of active
 Feeds, and for each the most recent entry sequence number ("version"). This
-state can be serialized as an array of integers, refered to as a [vector
+state can be serialized as an array of integers, referred to as a [vector
 clock](https://en.wikipedia.org/wiki/Vector_clock).
 
 Each `put()` operation on the database appends a node to the writer's `local`
@@ -283,7 +283,7 @@ of the others' concurrent action (and then these changes are replicated) that
 there are multiple heads.
 
 When operating on the database (eg, executing a `get()` operation), all heads
-must be considered. The lookup proceedure documented in the [hyperdb
+must be considered. The lookup procedure documented in the [hyperdb
 DEP](hyperdb-dep) must be repeated for each head, and nodes returned
 representing the set of all unique values.
 
@@ -291,7 +291,7 @@ The situation where a `get()` operation multiple heads returns different values
 for the same key is called a "conflict" and requires a "merge" to resolve. Some
 writer (either a human being or application-layer code) must decide on the
 correct value for the key and write that value as a new entry (with a vector
-clock that includes the previous heads). The procedure for chosing the best
+clock that includes the previous heads). The procedure for choosing the best
 value to use in a given conflict is sometimes easy to determine, but is
 impossible to determine algorithmically in the general case. See the "Usage"
 section for more details.
@@ -476,7 +476,7 @@ Design goals for hyperdb (including the multi-writer feature) included:
 
 If a solution for core use cases like collaboration and multi-device
 synchronization is not provided at a low level (as this DEP provides), each
-application will need to invent a solution at a higher level, incuring
+application will need to invent a solution at a higher level, incurring
 duplicated effort and a higher risk of bugs.
 
 As an alternative to CRDTs, Operational Transformation (OT) has a reputation
