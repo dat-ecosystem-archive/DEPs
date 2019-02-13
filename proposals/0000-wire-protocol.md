@@ -339,7 +339,7 @@ uncompressed-sequence = varint(byte-length-of-bitfield << 1 | 0) + bitfield
 
 As described in DEP-0002 (Hypercore), a peer should be able to verify both the integrity of received data (aka, was there corruption somewhere along the way, detected via hash) and the authenticity (aka, is this the data from the original writer, detected via signature). Hypercore transmits the hash for every data block, but only signatures for the root hashes of Merkle trees, not individual block hashes, which means a peer may need additional hashes (for data blocks they do not have a copy of) if they want to verify the signatures of individual blocks.
 
-Redundantly transmitting all such hashes on every request would be inefficient if the receiver already had some hashes, so requesting peers can specify which hashes they need in the `nodes` field of the `Request` message. Instead of sending node indexes, the peer can send a compact bitfield, indicating for each "uncle" and "parent" whether the hash should be transmitted.
+Redundantly transmitting all such hashes on every request would be inefficient if the receiver already had some hashes, so requesting peers can specify which hashes they need in the `nodes` field of the `Request` message. Instead of sending an array of node indexes, the `nodes` field is a compact bitfield (serialized as a `uint64`), indicating for each "uncle" and "parent" whether the hash should be transmitted.
 
 Consider the following tree:
 
@@ -365,22 +365,23 @@ An an example, suppose we want to fetch block 6 from a remote peer, and we alrea
  - 3, a parent (and root hash), we do have hash
  - root signature (of hash 3) will be sent with request
 
-Our `Request` should include the digest bits:
+Our `Request` should have the following `nodes` bitfield (`0b1011` encoded in the least-significant bits of a `uint64`):
 
 ```
-101(1) <-- indicates that the most-significant bit is a parent, not an uncle
-10(1)1 <-- do not send hash for the first uncle, 4
-1(0)11 <-- do send hash for the next uncle, 1
-(1)000 <-- do not send hash for next parent, 3
+1011 
+│││└── indicates that the most-significant bit is a parent, not an uncle
+││└─── do not send hash for the first uncle, 4
+│└──── do send hash for the next uncle, 1
+└───── do not send hash for next parent, 3
 ```
 
-This digest (bit vector `1011`) is transmitted in a `uint64`, in the least-significant bits. The receiving peer can calculate (from the index number) exactly how many bits are expected and extract the bitfield. The "most-significant bit" referenced above is of just the fixed-size bitfield, not the `uint64` as a whole.
+Using the `index` field of the `Request` message, the receiving peer can calculate the number of packed bits and extract the bitfield. The "most-significant bit" referenced above is of just the fixed-size bitfield, not the `uint64` as a whole.
 
 From this, the remote peer will know to only send one hash (for block 1) for us to verify block 6. Note that we (the receiver) can calculate the hash for block 6 ourselves when we receive it.
 
 As a special case, the bit vector `1` (only contains a single one) means that the sender should not send any hashes at all.
 
-These digests are very compact in size. Only `(log2(number-of-blocks) + 2) / 8` bytes are needed in the worst case. For example if you are sharing one trillion blocks of data the digest would be `(log2(1000000000000) + 2) / 8 ~= 6` bytes long (which fits in a single `uint64`).
+These digests are very compact in size. Only `(log2(number-of-blocks) + 2) / 8` bytes are needed in the worst case. For example if you are sharing one trillion blocks of data the digest would be `(log2(1000000000000) + 2) / 8 ~= 6` bytes long (which fits in a single `uint64`). This scheme works for Hypercores with up to `2^62 = 4,611,686,018,427,387,904` blocks.
 
 # Examples
 
