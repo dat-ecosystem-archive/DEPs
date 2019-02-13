@@ -476,5 +476,5 @@ Google Protocol Buffers Documentation ([website](https://developers.google.com/p
 The Dat wire protocol was initially described in the 2016 white paper referenced above.
 
 - 2018-03-04: Early "WIP" draft circulated on github
-- YYYY-MM-DD: First complete draft submitted for review
+- 2019-01-19: First complete draft submitted for review
 
