@@ -1,11 +1,11 @@
 
-Title: **DEP-0000: Hypercore Wire Protocol**
+Title: **DEP-0010: Hypercore Wire Protocol**
 
-Short Name: `0000-wire-protocol`
+Short Name: `0010-wire-protocol`
 
 Type: Standard
 
-Status: Undefined (as of 2018-02-04)
+Status: Draft (as of 2019-02-27)
 
 Github PR: [Draft](https://github.com/datprotocol/DEPs/pull/8)
 
@@ -478,4 +478,5 @@ The Dat wire protocol was initially described in the 2016 white paper referenced
 
 - 2018-03-04: Early "WIP" draft circulated on github
 - 2019-01-19: First complete draft submitted for review
+- 2019-02-27: Accepted as Draft
 
