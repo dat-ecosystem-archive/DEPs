@@ -358,7 +358,7 @@ If the receiving peers wants to fetch, and verify, block 6, it needs to communic
  - the least-significant bit indicates whether the most-significant bit is a "parent" (if '1') or an "uncle" (if '0')
  - all other bits, in order from least- to most-significant, indicate whether the corresponding "uncle" hash *does* need to be transmitted (if bit '0') or *does not* (if bit '1')
 
-An an example, suppose we want to fetch block 6 from a remote peer, and we already have the sparse node metadata (hashes) for blocks 3 and 4, but not 1. In other words:
+As an example, suppose we want to fetch block 6 from a remote peer, and we already have the sparse node metadata (hashes) for blocks 3 and 4, but not 1. In other words:
 
  - 4, an uncle, we already have the hash
  - 1, next uncle, we don't have hash
