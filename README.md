@@ -2,21 +2,21 @@
 # Dat Enhancement Proposals
 
 [![#dat IRC channel on freenode](https://img.shields.io/badge/irc%20channel-%23dat%20on%20freenode-blue.svg)](http://webchat.freenode.net/?channels=dat)
-[![datproject/discussions](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/datproject/discussions?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![docs](https://img.shields.io/badge/Dat%20Project-Docs-green.svg)](http://docs.dat-data.com)
+[![dat-ecosystem discord chat](https://badges.gitter.im/Join%20Chat.svg)]( https://discord.gg/egsvGc9TkQ?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![docs](https://img.shields.io/badge/Dat%20Project-Docs-green.svg)](https://github.com/dat-ecosystem/book/blob/master/src/SUMMARY.md)
 
 This repository contains a series of "Dat Enhancement Proposal" (DEP)
 documents, part of the dat protocol development and standardization process.
 
-Accepted proposals will be viewable at [datprotocol.com](https://datprotocol.com).  New (draft) proposals and discussion can be viewed on [github][github-deps] under "Pull requests".
+Accepted proposals will be viewable at [datprotocol.com](https://dat-ecosystem.github.io/datprotocol.com/).  New (draft) proposals and discussion can be viewed on [github][github-deps] under "Pull requests".
 
 These documents might be interesting reading to anybody wanting to learn more
 about protocol nitty gritties or the consensus process, but the documentation
-at [docs.datproject.org][docs] is specifically written with end-users and
+at [https://github.com/dat-ecosystem/book/blob/master/src/SUMMARY.md][docs] is specifically written with end-users and
 application developers in mind.
 
-[github-deps]: https://github.com/datprotocol/DEPs/
-[docs]: https://docs.datproject.org
+[github-deps]: https://github.com/dat-ecosystem/DEPs/
+[docs]: https://github.com/dat-ecosystem/book/blob/master/src/SUMMARY.md
 
 ## The Process
 
@@ -41,4 +41,4 @@ Attribution 4.0) license unless otherwise noted.
 Contributors and discussion participants are expected to abide by the Dat
 Project [Code of Conduct][coc].
 
-[coc]: https://github.com/datproject/Code-of-Conduct
+[coc]: https://github.com/dat-ecosystem/Code-of-Conduct
