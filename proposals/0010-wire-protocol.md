@@ -23,7 +23,7 @@ This DEP describes the Hypercore wire protocol: a transport-agnostic message str
 
 The protocol described here is already in use as of 2017 (by Hypercore, Dat, and Beaker Browser users), and was partially described in an earlier [whitepaper][whitepaper]. This document fills in some additional details.
 
-[whitepaper]: https://github.com/datprotocol/whitepaper
+[whitepaper]: https://github.com/dat-ecosystem/whitepaper
 
 
 # Stream Connections
@@ -445,7 +445,7 @@ The issues of observer decryption and message authenticity may be addressed in a
 
 # References
 
-"Dat - Distributed Dataset Synchronization And Versioning" by Maxwell Ogden, Karissa McKelvey, and Mathias Buus Madsen. Whitepaper, May 2017 ([pdf](https://datproject.org/paper)).
+"Dat - Distributed Dataset Synchronization And Versioning" by Maxwell Ogden, Karissa McKelvey, and Mathias Buus Madsen. Whitepaper, May 2017 ([pdf](https://github.com/dat-ecosystem/whitepaper)).
 
 "The BitTorrent Protocol Specification (BEP #3)", by Bram Cohen. January 2008 ([html](http://www.bittorrent.org/beps/bep_0003.html))
 
