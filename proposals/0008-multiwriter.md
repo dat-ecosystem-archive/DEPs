@@ -140,7 +140,7 @@ an authorized writer to the hyperdb database.
 
 At the time of this DEP there is no mechanism for revoking authorization.
 
-[dep-hyperdb]: https://github.com/datprotocol/DEPs/blob/master/proposals/0004-hyperdb.md
+[dep-hyperdb]: https://github.com/dat-ecosystem/DEPs/blob/master/proposals/0004-hyperdb.md
 
 
 ## Scaling

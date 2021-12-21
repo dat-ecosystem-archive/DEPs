@@ -18,7 +18,7 @@ Authors: [Dat Protocol Working Group][wg]:
 [Danielle Robinson](https://github.com/daniellecrobinson),
 [Bryan Newbold](https://github.com/bnewbold)
 
-[wg]: https://github.com/datprotocol/working-group
+[wg]: https://github.com/dat-ecosystem/consortium/tree/7b1b21a51b1369266116cec52c7b163dfe1959cd
 
 
 # Summary
@@ -72,7 +72,7 @@ some of the details, all the better. This period could be called **pre-DEP**.
 Once your idea has been flushed out, the process for proposing and debating a
 new DEP is:
 
-1. Use git to fork the [datprotocol/deps](https://github.com/datprotocol/deps)
+1. Use git to fork the [datprotocol/deps](https://github.com/dat-ecosystem/deps)
    repository
 1. Copy `0000-template.md` to `proposals/0000-my-proposal.md` (don't choose the
    "next" number, use zero; `my-proposal` should be a stub identifier for the
@@ -280,10 +280,10 @@ issues, and the [datprotocol github group][datproto-group] (containing, eg, the
 another" place to look.
 
 [proto-website]: https://www.datprotocol.com/
-[whitepaper]: https://github.com/datproject/docs/blob/master/papers/dat-paper.md
-[docs]: https://docs.datproject.org/
-[datproto-group]: https://github.com/datprotocol
-[discussion-repo]: https://github.com/datproject/discussions/issues
+[whitepaper]: https://github.com/dat-ecosystem/whitepaper
+[docs]: https://github.com/dat-ecosystem/book/blob/master/src/SUMMARY.md
+[datproto-group]: https://github.com/dat-ecosystem
+[discussion-repo]: https://discord.gg/egsvGc9TkQ
 
 
 # Background and References
