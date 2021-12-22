@@ -1,9 +1,11 @@
 
+[![deprecated](http://badges.github.io/stability-badges/dist/deprecated.svg)](https://github.com/hypercore-protocol/hypercore-proposals) 
+
+See [hyp](https://github.com/hypercore-protocol/hypercore-proposals) for similar functionality. More info on active projects and modules at [dat-ecosystem.org <img src="https://i.imgur.com/qZWlO1y.jpg" width="20" height="20" />](https://dat-ecosystem.org/) 
+
+---
+
 # Dat Enhancement Proposals
-
-[![deprecated](http://badges.github.io/stability-badges/dist/deprecated.svg)](https://github.com/hypercore-protocol/hypercore-proposals) See [hyp](https://github.com/hypercore-protocol/hypercore-proposals) for similar functionality. 
-
-More info on active projects and modules at [dat-ecosystem.org](https://dat-ecosystem.org/) <img src="https://i.imgur.com/qZWlO1y.jpg" width="30" height="30" /> 
 
 This repository contains a series of "Dat Enhancement Proposal" (DEP)
 documents, part of the dat protocol development and standardization process.
