@@ -1,6 +1,8 @@
 
 # Dat Enhancement Proposals
 
+[DEPRECATED - more info on active projects and modules at dat-ecosystem.org]
+
 [![#dat IRC channel on freenode](https://img.shields.io/badge/irc%20channel-%23dat%20on%20freenode-blue.svg)](http://webchat.freenode.net/?channels=dat)
 [![dat-ecosystem discord chat](https://badges.gitter.im/Join%20Chat.svg)]( https://discord.gg/egsvGc9TkQ?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![docs](https://img.shields.io/badge/Dat%20Project-Docs-green.svg)](https://github.com/dat-ecosystem/book/blob/master/src/SUMMARY.md)
