@@ -17,8 +17,6 @@ Authors: [Paul Frazee](https://github.com/pfrazee), [Mathias Buus](https://githu
 
 Hypercore Feeds are the core mechanism used in Dat. They are binary append-only streams whose contents are cryptographically hashed and signed and therefore can be verified by anyone with access to the public key of the writer.
 
-Dat uses two feeds, `content` and `metadata`. The `content` feed contains the files in your repository and `metadata` contains the metadata about the files including name, size, last modified time, etc. Dat replicates them both when synchronizing with another peer.
-
 
 # Motivation
 [motivation]: #motivation
