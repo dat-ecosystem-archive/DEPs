@@ -42,14 +42,15 @@ The client may respond to the message by emitting an event, so that it may be ha
 
 After publishing this DEP, the "Beaker Browser" will implement a Web API for exposing the `'session-data'` protocol to applications. It will restrict access so that the application code of a `dat://` site will only be able to set the session data for connections related to its own content.
 
-
 # Drawbacks
 [drawbacks]: #drawbacks
 
 - This DEP may present privacy concerns, as it may be used to track users in a similar fashion to HTTP Cookies.
 - The payload of the `'session-data'` message is not authenticated in any way. If a public key is sent, proof of ownership of the private key is not provided. The lack of trust must be considered by applications which leverage the data.
 - If the recipient of the `'session-data'` message is not authenticated (as is currently the case in all Dat replication connections) the client will not know who is receiving the payload and may broadcast sensitive information.
-
+- By implementing this DEP, servers **can** return different data depending on the session-data as such we must expect that they will. This is hidden behavior that can not be explained without debugging the server within the session state: Users need to be educated about this fact.
+- Different data per session can be implemented at the discretion of the server. It may be related to the session data or to unrelated data (time, amount of other users, etc.). The client may never share any data received within a session. To be consistent: every new session needs to be treated as independent from former data received.
+- In order to allow users to enter session data, clients need to implement an UI for this as well: if the session data is only machine readable: UI's may be difficult to implement.
 
 # Rationale and alternatives
 [alternatives]: #alternatives
@@ -62,6 +63,7 @@ An alternative approach would be to establish an ephemeral messaging channel, pe
 # Changelog
 [changelog]: #changelog
 
+- 2018-11-15: Drawback information amended 
 - 2018-06-06: Merged as draft
 - 2018-05-31: First complete draft submitted for review
 
