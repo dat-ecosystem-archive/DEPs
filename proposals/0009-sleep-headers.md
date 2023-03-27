@@ -166,7 +166,7 @@ configuration
       <2 byte entry size: 64>
       <1 byte algorithm name length prefix: 7>
       <7 byte algorithm name: Ed25519>
-      <21 byte padding>
+      <17 byte padding>
 
 ### 1 byte header type: 0x01
 Signatures should have the header type of `0x01`.
@@ -180,8 +180,8 @@ The string `Ed25519` is 7 characters long.
 ### variable byte algorithm name: Ed25519
 Signatures are created using the `Ed25519` encryption scheme.
 
-### variable byte padding: 21
-`21` zeroes are appended to the end of the header to create a total of 32 bytes.
+### variable byte padding: 17
+`17` zeroes are appended to the end of the header to create a total of 32 bytes.
 
 ## Merkle Tree Layout
 
@@ -194,7 +194,7 @@ This describes the header layout of SLEEP headers in the tree configuration
       <2 byte entry size: 40>
       <1 byte algorithm name length prefix: 7>
       <7 byte algorithm name: BLAKE2b>
-      <21 byte padding>
+      <17 byte padding>
 
 ### 1 byte header type: 0x02
 Merkle Trees should have the header type of `0x02`.
@@ -209,8 +209,8 @@ The string `BLAKE2b` is 7 characters long.
 ### variable byte algorithm name: BLAKE2b
 Merkle Tree entries are created using the `BLAKE2b` hashing scheme.
 
-### variable byte padding: 21
-`21` zeroes are appended to the end of the header to create a total of 32 bytes.
+### variable byte padding: 17
+`17` zeroes are appended to the end of the header to create a total of 32 bytes.
 
 # Drawbacks
 
